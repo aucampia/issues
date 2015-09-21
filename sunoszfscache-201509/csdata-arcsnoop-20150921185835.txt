@@ -1,0 +1,997 @@
+2015-09-21T18:58:35 ./arcsnoop.sh:5002 declare -- script_dirname="."
+2015-09-21T18:58:35 ./arcsnoop.sh:5002 declare -- script_basename="arcsnoop.sh"
+2015-09-21T18:58:35 ./arcsnoop.sh:5002 declare -a argv='([0]="-n" [1]="mongod" [2]="-v" [3]="-v" [4]="-v" [5]="-f" [6]="data" [7]="-l" [8]="miss" [9]="-u" [10]="-1" [11]="-t" [12]="-s" [13]="-S")'
+2015-09-21T18:58:35 ./arcsnoop.sh:5002 declare -- OPTERR=""
+2015-09-21T18:58:35 ./arcsnoop.sh:5002 declare -- option="?"
+2015-09-21T18:58:35 ./arcsnoop.sh:5002 declare -- OPTIND="15"
+2015-09-21T18:58:35 ./arcsnoop.sh:5002 declare -- pid=""
+2015-09-21T18:58:35 ./arcsnoop.sh:5002 declare -- execname="mongod"
+2015-09-21T18:58:35 ./arcsnoop.sh:5002 declare -- nspec="170"
+2015-09-21T18:58:35 ./arcsnoop.sh:5002 declare -- loc="miss"
+2015-09-21T18:58:35 ./arcsnoop.sh:5002 declare -- filter="data"
+2015-09-21T18:58:35 ./arcsnoop.sh:5002 declare -- predicate="( execname == \"mongod\" )"
+0001:		
+0002:		#pragma D option specsize=100k
+0003:		#pragma D option nspec=170
+0004:		#pragma D option bufresize=manual
+0005:		#pragma D option cleanrate=200hz
+0006:		inline int opt_trace = 1;
+0007:		inline int opt_speculate = 1;
+0008:		inline int opt_speculate_debug = 1;
+0009:		self int has_dmu_buf_impl;
+0010:		self dmu_buf_impl_t* dmu_buf_impl;
+0011:		self int tracing;
+0012:		self int indent;
+0013:		self int read_hit;
+0014:		self int reactivate_hit;
+0015:		self int arc_options;
+0016:		self int reactivate_arc_flags;
+0017:		self int read_arc_flags;
+0018:		self int speculation;
+0019:		
+0020:		
+0021:		fbt:::entry
+0022:		/self->tracing && self->speculation/
+0023:		{
+0024:			speculate( self->speculation );
+0025:			self->indent = self->indent + 1;
+0026:			printf( "%*s( %i ):( %s:%s:%s:%s ):():( tid=%i ):( indent = %i, speculation = %i, tracing = %i ):()\n", self->indent, "{",
+0027:				walltimestamp, probeprov, probemod, probefunc, probename, tid, self->indent, self->speculation, self->tracing );
+0028:		}
+0029:		
+0030:		
+0031:		fbt:zfs:arc_read:entry
+0032:		/opt_speculate && ( execname == "mongod" ) && !self->tracing && !self->speculation/
+0033:		{
+0034:			self->speculation = speculation();
+0035:		}
+0036:		
+0037:		fbt:zfs:arc_read:entry
+0038:		/self->speculation/
+0039:		{
+0040:			/*
+0041:				args[0]: zio_t *
+0042:				args[1]: spa_t *
+0043:				args[2]: blkptr_t *
+0044:				args[3]: uint64_t
+0045:				args[4]: arc_done_func_t *
+0046:				args[5]: void *
+0047:				args[6]: int
+0048:				args[7]: enum zio_flag
+0049:				args[8]: arc_options_t
+0050:				args[9]: zbookmark_t *
+0051:			*/
+0052:			/*
+0053:			self->speculation = ( self->tracing == 0 ? speculation() : self->speculation );
+0054:			self->speculation = speculation();
+0055:			*/
+0056:			speculate( self->speculation );
+0057:			self->indent = ( self->tracing == 0 ? 1 : self->indent );
+0058:			self->tracing = self->tracing + 1;
+0059:		
+0060:			self->read_hit = -1;
+0061:			self->arc_options = args[8];
+0062:			self->read_arc_flags = -1;
+0063:			opt_trace ? printf( "%*s( %i ):( %s:%s:%s:%s ):():( tid=%i ):( indent = %i, speculation = %i, tracing = %i ):( arc_options = %i )\n", self->indent, "{",
+0064:				walltimestamp, probeprov, probemod, probefunc, probename, tid, self->indent, self->speculation, self->tracing, self->arc_options ) : 0;
+0065:		}
+0066:		
+0067:		fbt:zfs:arc_read:entry
+0068:		/opt_speculate_debug && self->tracing/
+0069:		{
+0070:			opt_trace ? printf( "%*s( %i ):( %s:%s:%s:%s ):():( tid=%i ):( indent = %i, speculation = %i, tracing = %i ):( speculate( self->speculation ) )\n", self->indent, "{",
+0071:				walltimestamp, probeprov, probemod, probefunc, probename, tid, self->indent, self->speculation, self->tracing ) : 0;
+0072:		}
+0073:		
+0074:		fbt:zfs:arc_hash_lookup:return
+0075:		/self->tracing && self->read_arc_flags == -1/
+0076:		{
+0077:			self->read_arc_flags = args[1]->b_id.h_flags;
+0078:		}
+0079:		
+0080:		sdt:zfs:arc_read:arc-miss
+0081:		/self->tracing/
+0082:		{
+0083:			speculate( self->speculation );
+0084:			self->read_hit = 1;
+0085:			opt_trace ? printf( "%*s( %i ):( %s:%s:%s:%s ):():( tid=%i ):( indent = %i, speculation = %i, tracing = %i ):()\n", self->indent, "",
+0086:				walltimestamp, probeprov, probemod, probefunc, probename, tid, self->indent, self->speculation, self->tracing ) : 0;
+0087:		}
+0088:		
+0089:		sdt:zfs:arc_read:arc-hit
+0090:		/self->tracing/
+0091:		{
+0092:			speculate( self->speculation );
+0093:			self->read_hit = 2;
+0094:			opt_trace ? printf( "%*s( %i ):( %s:%s:%s:%s ):():( tid=%i ):( indent = %i, speculation = %i, tracing = %i ):()\n", self->indent, "",
+0095:				walltimestamp, probeprov, probemod, probefunc, probename, tid, self->indent, self->speculation, self->tracing ) : 0;
+0096:		}
+0097:		
+0098:		fbt:zfs:arc_read:return
+0099:		/self->tracing/
+0100:		{
+0101:			speculate( self->speculation );
+0102:			opt_trace ? printf( "%*s( %i ):( %s:%s:%s:%s ):():( tid=%i ):( indent = %i, speculation = %i, tracing = %i ):()\n", self->indent, "}",
+0103:				walltimestamp, probeprov, probemod, probefunc, probename, tid, self->indent, self->speculation, self->tracing ) : 0;
+0104:		}
+0105:		
+0106:		fbt:zfs:arc_read:return
+0107:		/opt_speculate && self->tracing && ( ( ( self->reactivate_arc_flags & 1 ) == 0 ) && ( self->reactivate_hit == 1 ) )/
+0108:		{
+0109:			commit( self->speculation );
+0110:			self->speculation = 0;
+0111:		}
+0112:		
+0113:		fbt:zfs:arc_read:return
+0114:		/opt_speculate_debug && self->tracing && ( ( ( self->reactivate_arc_flags & 1 ) == 0 ) && ( self->reactivate_hit == 1 ) )/
+0115:		{
+0116:			opt_trace ? printf( "%*s( %i ):( %s:%s:%s:%s ):():( tid=%i ):( indent = %i, speculation = %i, tracing = %i ):( commit( self->speculation ) )\n", self->indent, "}",
+0117:				walltimestamp, probeprov, probemod, probefunc, probename, tid, self->indent, self->speculation, self->tracing ) : 0;
+0118:		}
+0119:		
+0120:		fbt:zfs:arc_read:return
+0121:		/opt_speculate && self->tracing && !( ( ( self->reactivate_arc_flags & 1 ) == 0 ) && ( self->reactivate_hit == 1 ) )/
+0122:		{
+0123:			discard( self->speculation );
+0124:			self->speculation = 0;
+0125:		}
+0126:		
+0127:		fbt:zfs:arc_read:return
+0128:		/opt_speculate_debug && self->tracing && !( ( ( self->reactivate_arc_flags & 1 ) == 0 ) && ( self->reactivate_hit == 1 ) )/
+0129:		{
+0130:			opt_trace ? printf( "%*s( %i ):( %s:%s:%s:%s ):():( tid=%i ):( indent = %i, speculation = %i, tracing = %i ):( discard( self->speculation ) )\n", self->indent, "}",
+0131:				walltimestamp, probeprov, probemod, probefunc, probename, tid, self->indent, self->speculation, self->tracing ) : 0;
+0132:		}
+0133:		
+0134:		fbt:zfs:arc_read:return
+0135:		/self->tracing && ( ( self->read_arc_flags & 1 ) == 0 ) && ( self->read_hit == 1 )/
+0136:		{
+0137:			@out[ execname, pid, probefunc, self->arc_options, self->read_arc_flags, self->read_hit, ustack(  ) ] = count();
+0138:		}
+0139:		
+0140:		fbt:zfs:arc_read:return
+0141:		/self->tracing/
+0142:		{
+0143:			self->tracing = self->tracing - 1;
+0144:			self->indent = ( self->tracing == 0 ? 0 : self->indent );
+0145:		}
+0146:		
+0147:		fbt:zfs:arc_reactivate_ref:entry
+0148:		/opt_speculate && ( execname == "mongod" ) && !self->tracing && !self->speculation/
+0149:		{
+0150:			self->speculation = speculation();
+0151:		}
+0152:		
+0153:		fbt:zfs:arc_reactivate_ref:entry
+0154:		/self->speculation/
+0155:		{
+0156:			/*
+0157:				args[0]: arc_ref_t *
+0158:			*/
+0159:			/*
+0160:			self->speculation = ( self->tracing == 0 ? speculation() : self->speculation );
+0161:			self->speculation = speculation();
+0162:			*/
+0163:			speculate( self->speculation );
+0164:			self->indent = ( self->tracing == 0 ? 1 : self->indent );
+0165:			self->speculation = ( self->tracing == 0 ? speculation() : self->speculation );
+0166:			self->tracing = self->tracing + 1;
+0167:		
+0168:			self->reactivate_hit = -1;
+0169:			self->reactivate_arc_flags = args[0]->r_buf->b_id.h_flags;
+0170:			opt_trace ? printf( "%*s( %i ):( %s:%s:%s:%s ):():( tid=%i ):( indent = %i, speculation = %i, tracing = %i ):( arc_flags = %i )\n", self->indent, "{",
+0171:				walltimestamp, probeprov, probemod, probefunc, probename, tid, self->indent, self->speculation, self->tracing, self->reactivate_arc_flags ) : 0;
+0172:		}
+0173:		
+0174:		fbt:zfs:arc_reactivate_ref:entry
+0175:		/opt_speculate_debug && self->tracing/
+0176:		{
+0177:			opt_trace ? printf( "%*s( %i ):( %s:%s:%s:%s ):():( tid=%i ):( indent = %i, speculation = %i, tracing = %i ):( speculate( self->speculation ) )\n", self->indent, "{",
+0178:				walltimestamp, probeprov, probemod, probefunc, probename, tid, self->indent, self->speculation, self->tracing ) : 0;
+0179:		}
+0180:		
+0181:		sdt:zfs:arc_reactivate_ref:arc-hit
+0182:		/self->tracing/
+0183:		{
+0184:			speculate( self->speculation );
+0185:			self->reactivate_hit = 2;
+0186:			opt_trace ? printf( "%*s( %i ):( %s:%s:%s:%s ):():( tid=%i ):( indent = %i, speculation = %i, tracing = %i ):()\n", self->indent, "",
+0187:				walltimestamp, probeprov, probemod, probefunc, probename, tid, self->indent, self->speculation, self->tracing ) : 0;
+0188:		}
+0189:		
+0190:		fbt:zfs:arc_reactivate_ref:return
+0191:		/self->tracing/
+0192:		{
+0193:			speculate( self->speculation );
+0194:			opt_trace ? printf( "%*s( %i ):( %s:%s:%s:%s ):():( tid=%i ):( indent = %i, speculation = %i, tracing = %i ):()\n", self->indent, "}",
+0195:				walltimestamp, probeprov, probemod, probefunc, probename, tid, self->indent, self->speculation, self->tracing ) : 0;
+0196:		}
+0197:		
+0198:		fbt:zfs:arc_reactivate_ref:return
+0199:		/opt_speculate && self->tracing && ( ( ( self->reactivate_arc_flags & 1 ) == 0 ) && ( self->reactivate_hit == 1 ) )/
+0200:		{
+0201:			commit( self->speculation );
+0202:			self->speculation = 0;
+0203:		}
+0204:		
+0205:		fbt:zfs:arc_reactivate_ref:return
+0206:		/opt_speculate_debug && self->tracing && ( ( ( self->reactivate_arc_flags & 1 ) == 0 ) && ( self->reactivate_hit == 1 ) )/
+0207:		{
+0208:			opt_trace ? printf( "%*s( %i ):( %s:%s:%s:%s ):():( tid=%i ):( indent = %i, speculation = %i, tracing = %i ):( commit( self->speculation ) )\n", self->indent, "}",
+0209:				walltimestamp, probeprov, probemod, probefunc, probename, tid, self->indent, self->speculation, self->tracing ) : 0;
+0210:		}
+0211:		
+0212:		fbt:zfs:arc_reactivate_ref:return
+0213:		/opt_speculate && self->tracing && !( ( ( self->reactivate_arc_flags & 1 ) == 0 ) && ( self->reactivate_hit == 1 ) )/
+0214:		{
+0215:			discard( self->speculation );
+0216:			self->speculation = 0;
+0217:		}
+0218:		
+0219:		fbt:zfs:arc_reactivate_ref:return
+0220:		/opt_speculate_debug && self->tracing && !( ( ( self->reactivate_arc_flags & 1 ) == 0 ) && ( self->reactivate_hit == 1 ) )/
+0221:		{
+0222:			opt_trace ? printf( "%*s( %i ):( %s:%s:%s:%s ):():( tid=%i ):( indent = %i, speculation = %i, tracing = %i ):( discard( self->speculation ) )\n", self->indent, "}",
+0223:				walltimestamp, probeprov, probemod, probefunc, probename, tid, self->indent, self->speculation, self->tracing ) : 0;
+0224:		}
+0225:		
+0226:		fbt:zfs:arc_reactivate_ref:return
+0227:		/self->tracing && ( ( self->reactivate_arc_flags & 1 ) == 0 ) && ( self->reactivate_hit == 1 )/
+0228:		{
+0229:			@out[ execname, pid, probefunc, -1, self->reactivate_arc_flags, self->reactivate_hit, ustack(  ) ] = count();
+0230:		}
+0231:		
+0232:		fbt:zfs:arc_reactivate_ref:return
+0233:		/self->tracing/
+0234:		{
+0235:			self->tracing = self->tracing - 1;
+0236:			self->indent = ( self->tracing == 0 ? 0 : self->indent );
+0237:		}
+0238:		
+0239:		
+0240:		fbt:::return
+0241:		/self->tracing && self->speculation/
+0242:		{
+0243:			speculate( self->speculation );
+0244:			printf( "%*s( %i ):( %s:%s:%s:%s ):():( tid=%i ):( indent = %i, speculation = %i, tracing = %i ):()\n", self->indent, "}",
+0245:				walltimestamp, probeprov, probemod, probefunc, probename, tid, self->indent, self->speculation, self->tracing );
+0246:			self->indent = self->indent - 1;
+0247:		}
+0248:		
+0249:		sdt:::
+0250:		/self->tracing && self->speculation/
+0251:		{
+0252:			speculate( self->speculation );
+0253:			printf( "%*s( %i ):( %s:%s:%s:%s ):():( tid=%i ):( indent = %i, speculation = %i, tracing = %i ):()\n", self->indent, "",
+0254:				walltimestamp, probeprov, probemod, probefunc, probename, tid, self->indent, self->speculation, self->tracing );
+0255:		}
+0256:		
+0257:		
+0258:		dtrace:::END
+0259:		{
+0260:			printf( "execname, pid, probefunc, arc_options (1=meta), arc_flags (1=meta), arc_hit(1=miss, 2=hit, *=unk), kstack, ustack, count" );
+0261:			printa( @out );
+0262:		}
+0263:		
+{( 1442843917282400054 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=31 ):( indent = 1, speculation = 3, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917282400054 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=31 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917282400054 ):( fbt:zfs:arc_read:entry ):():( tid=31 ):( indent = 1, speculation = 3, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917282400054 ):( fbt:zfs:arc_read:return ):():( tid=31 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917302400191 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 6, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917302400191 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917302400191 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 6, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917302400191 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917272387207 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=51 ):( indent = 1, speculation = 2, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917272387207 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=51 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917272387207 ):( fbt:zfs:arc_read:entry ):():( tid=51 ):( indent = 1, speculation = 2, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917272387207 ):( fbt:zfs:arc_read:return ):():( tid=51 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917282400054 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=43 ):( indent = 1, speculation = 4, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917282400054 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=43 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917282400054 ):( fbt:zfs:arc_read:entry ):():( tid=43 ):( indent = 1, speculation = 4, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917282400054 ):( fbt:zfs:arc_read:return ):():( tid=43 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917292384481 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=43 ):( indent = 1, speculation = 5, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917292384481 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=43 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917292384481 ):( fbt:zfs:arc_read:entry ):():( tid=43 ):( indent = 1, speculation = 5, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917302400191 ):( fbt:zfs:arc_read:return ):():( tid=43 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917502415097 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 22, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917502415097 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917502415097 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 22, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843917512423025 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917532408154 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 24, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917532408154 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917532408154 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 24, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917532408154 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917542415907 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 25, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917542415907 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917542415907 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 25, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917542415907 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917382396924 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=31 ):( indent = 1, speculation = 9, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917382396924 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=31 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917382396924 ):( fbt:zfs:arc_read:entry ):():( tid=31 ):( indent = 1, speculation = 9, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917382396924 ):( fbt:zfs:arc_read:return ):():( tid=31 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917692428108 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=30 ):( indent = 1, speculation = 43, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917692428108 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=30 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917692428108 ):( fbt:zfs:arc_read:entry ):():( tid=30 ):( indent = 1, speculation = 43, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917692428108 ):( fbt:zfs:arc_read:return ):():( tid=30 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917702420605 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=30 ):( indent = 1, speculation = 44, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917702420605 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=30 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917702420605 ):( fbt:zfs:arc_read:entry ):():( tid=30 ):( indent = 1, speculation = 44, tracing = 1 ):( speculate( self->speculation ) )
+  }( 1442843917702420605 ):( fbt:zfs:arc_read:return ):():( tid=30 ):( indent = 3, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917712426814 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=30 ):( indent = 1, speculation = 45, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917712426814 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=30 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917712426814 ):( fbt:zfs:arc_read:entry ):():( tid=30 ):( indent = 1, speculation = 45, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843917712426814 ):( fbt:zfs:arc_read:return ):():( tid=30 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917722411573 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=30 ):( indent = 1, speculation = 46, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917722411573 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=30 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917722411573 ):( fbt:zfs:arc_read:entry ):():( tid=30 ):( indent = 1, speculation = 46, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843917722411573 ):( fbt:zfs:arc_read:return ):():( tid=30 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917732418411 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=30 ):( indent = 1, speculation = 47, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917732418411 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=30 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917732418411 ):( fbt:zfs:arc_read:entry ):():( tid=30 ):( indent = 1, speculation = 47, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843917732418411 ):( fbt:zfs:arc_read:return ):():( tid=30 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917752422936 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=30 ):( indent = 1, speculation = 48, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917752422936 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=30 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917752422936 ):( fbt:zfs:arc_read:entry ):():( tid=30 ):( indent = 1, speculation = 48, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843917752422936 ):( fbt:zfs:arc_read:return ):():( tid=30 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917752422936 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=30 ):( indent = 1, speculation = 49, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917752422936 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=30 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917752422936 ):( fbt:zfs:arc_read:entry ):():( tid=30 ):( indent = 1, speculation = 49, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843917752422936 ):( fbt:zfs:arc_read:return ):():( tid=30 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917762423164 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=30 ):( indent = 1, speculation = 50, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917762423164 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=30 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917762423164 ):( fbt:zfs:arc_read:entry ):():( tid=30 ):( indent = 1, speculation = 50, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843917762423164 ):( fbt:zfs:arc_read:return ):():( tid=30 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917772423056 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=30 ):( indent = 1, speculation = 51, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917772423056 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=30 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917772423056 ):( fbt:zfs:arc_read:entry ):():( tid=30 ):( indent = 1, speculation = 51, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843917772423056 ):( fbt:zfs:arc_read:return ):():( tid=30 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917782428558 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=30 ):( indent = 1, speculation = 52, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917782428558 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=30 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917782428558 ):( fbt:zfs:arc_read:entry ):():( tid=30 ):( indent = 1, speculation = 52, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843917782428558 ):( fbt:zfs:arc_read:return ):():( tid=30 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917782428558 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=30 ):( indent = 1, speculation = 53, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917782428558 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=30 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917782428558 ):( fbt:zfs:arc_read:entry ):():( tid=30 ):( indent = 1, speculation = 53, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843917782428558 ):( fbt:zfs:arc_read:return ):():( tid=30 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917812486175 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=31 ):( indent = 1, speculation = 56, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917812486175 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=31 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917812486175 ):( fbt:zfs:arc_read:entry ):():( tid=31 ):( indent = 1, speculation = 56, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843917822423564 ):( fbt:zfs:arc_read:return ):():( tid=31 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918032438158 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=31 ):( indent = 1, speculation = 63, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918032438158 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=31 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918032438158 ):( fbt:zfs:arc_read:entry ):():( tid=31 ):( indent = 1, speculation = 63, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918032438158 ):( fbt:zfs:arc_read:return ):():( tid=31 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918042435102 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=31 ):( indent = 1, speculation = 64, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918042435102 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=31 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918042435102 ):( fbt:zfs:arc_read:entry ):():( tid=31 ):( indent = 1, speculation = 64, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918042435102 ):( fbt:zfs:arc_read:return ):():( tid=31 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918042435102 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=31 ):( indent = 1, speculation = 65, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918042435102 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=31 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918042435102 ):( fbt:zfs:arc_read:entry ):():( tid=31 ):( indent = 1, speculation = 65, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918042435102 ):( fbt:zfs:arc_read:return ):():( tid=31 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918052444639 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=31 ):( indent = 1, speculation = 66, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918052444639 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=31 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918052444639 ):( fbt:zfs:arc_read:entry ):():( tid=31 ):( indent = 1, speculation = 66, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918052444639 ):( fbt:zfs:arc_read:return ):():( tid=31 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918062539096 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=31 ):( indent = 1, speculation = 67, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918062539096 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=31 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918062539096 ):( fbt:zfs:arc_read:entry ):():( tid=31 ):( indent = 1, speculation = 67, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918062539096 ):( fbt:zfs:arc_read:return ):():( tid=31 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918072446346 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=31 ):( indent = 1, speculation = 68, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918072446346 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=31 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918072446346 ):( fbt:zfs:arc_read:entry ):():( tid=31 ):( indent = 1, speculation = 68, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918072446346 ):( fbt:zfs:arc_read:return ):():( tid=31 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918082428997 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=31 ):( indent = 1, speculation = 69, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918082428997 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=31 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918082428997 ):( fbt:zfs:arc_read:entry ):():( tid=31 ):( indent = 1, speculation = 69, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918082428997 ):( fbt:zfs:arc_read:return ):():( tid=31 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918082428997 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=31 ):( indent = 1, speculation = 70, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918082428997 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=31 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918082428997 ):( fbt:zfs:arc_read:entry ):():( tid=31 ):( indent = 1, speculation = 70, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918092435406 ):( fbt:zfs:arc_read:return ):():( tid=31 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918102452896 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=25 ):( indent = 1, speculation = 72, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918102452896 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=25 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918102452896 ):( fbt:zfs:arc_read:entry ):():( tid=25 ):( indent = 1, speculation = 72, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918102452896 ):( fbt:zfs:arc_read:return ):():( tid=25 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918112431127 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=25 ):( indent = 1, speculation = 73, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918112431127 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=25 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918112431127 ):( fbt:zfs:arc_read:entry ):():( tid=25 ):( indent = 1, speculation = 73, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918112431127 ):( fbt:zfs:arc_read:return ):():( tid=25 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918122440468 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=25 ):( indent = 1, speculation = 74, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918122440468 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=25 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918122440468 ):( fbt:zfs:arc_read:entry ):():( tid=25 ):( indent = 1, speculation = 74, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918122440468 ):( fbt:zfs:arc_read:return ):():( tid=25 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918132447672 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=25 ):( indent = 1, speculation = 76, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918132447672 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=25 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918132447672 ):( fbt:zfs:arc_read:entry ):():( tid=25 ):( indent = 1, speculation = 76, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918132447672 ):( fbt:zfs:arc_read:return ):():( tid=25 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918142434722 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=25 ):( indent = 1, speculation = 78, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918142434722 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=25 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918142434722 ):( fbt:zfs:arc_read:entry ):():( tid=25 ):( indent = 1, speculation = 78, tracing = 1 ):( speculate( self->speculation ) )
+  }( 1442843918142434722 ):( fbt:zfs:arc_read:return ):():( tid=25 ):( indent = 3, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918152440291 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=25 ):( indent = 1, speculation = 79, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918152440291 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=25 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918152440291 ):( fbt:zfs:arc_read:entry ):():( tid=25 ):( indent = 1, speculation = 79, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918152440291 ):( fbt:zfs:arc_read:return ):():( tid=25 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918162439184 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=25 ):( indent = 1, speculation = 82, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918162439184 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=25 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918162439184 ):( fbt:zfs:arc_read:entry ):():( tid=25 ):( indent = 1, speculation = 82, tracing = 1 ):( speculate( self->speculation ) )
+  }( 1442843918162439184 ):( fbt:zfs:arc_read:return ):():( tid=25 ):( indent = 3, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918172435045 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=25 ):( indent = 1, speculation = 85, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918172435045 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=25 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918172435045 ):( fbt:zfs:arc_read:entry ):():( tid=25 ):( indent = 1, speculation = 85, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918172435045 ):( fbt:zfs:arc_read:return ):():( tid=25 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918182452646 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=25 ):( indent = 1, speculation = 86, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918182452646 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=25 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918182452646 ):( fbt:zfs:arc_read:entry ):():( tid=25 ):( indent = 1, speculation = 86, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918182452646 ):( fbt:zfs:arc_read:return ):():( tid=25 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918192501661 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=25 ):( indent = 1, speculation = 88, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918192501661 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=25 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918192501661 ):( fbt:zfs:arc_read:entry ):():( tid=25 ):( indent = 1, speculation = 88, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918192501661 ):( fbt:zfs:arc_read:return ):():( tid=25 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918202447212 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=25 ):( indent = 1, speculation = 89, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918202447212 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=25 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918202447212 ):( fbt:zfs:arc_read:entry ):():( tid=25 ):( indent = 1, speculation = 89, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918202447212 ):( fbt:zfs:arc_read:return ):():( tid=25 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918222440022 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=25 ):( indent = 1, speculation = 90, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918222440022 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=25 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918222440022 ):( fbt:zfs:arc_read:entry ):():( tid=25 ):( indent = 1, speculation = 90, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918222440022 ):( fbt:zfs:arc_read:return ):():( tid=25 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918232443034 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=25 ):( indent = 1, speculation = 91, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918232443034 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=25 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918232443034 ):( fbt:zfs:arc_read:entry ):():( tid=25 ):( indent = 1, speculation = 91, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918232443034 ):( fbt:zfs:arc_read:return ):():( tid=25 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918232443034 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=25 ):( indent = 1, speculation = 92, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918232443034 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=25 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918232443034 ):( fbt:zfs:arc_read:entry ):():( tid=25 ):( indent = 1, speculation = 92, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918232443034 ):( fbt:zfs:arc_read:return ):():( tid=25 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918242468081 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=25 ):( indent = 1, speculation = 93, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918242468081 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=25 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918242468081 ):( fbt:zfs:arc_read:entry ):():( tid=25 ):( indent = 1, speculation = 93, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918242468081 ):( fbt:zfs:arc_read:return ):():( tid=25 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918252438681 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=25 ):( indent = 1, speculation = 94, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918252438681 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=25 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918252438681 ):( fbt:zfs:arc_read:entry ):():( tid=25 ):( indent = 1, speculation = 94, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918252438681 ):( fbt:zfs:arc_read:return ):():( tid=25 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918262450507 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=25 ):( indent = 1, speculation = 95, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918262450507 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=25 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918262450507 ):( fbt:zfs:arc_read:entry ):():( tid=25 ):( indent = 1, speculation = 95, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918262450507 ):( fbt:zfs:arc_read:return ):():( tid=25 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918282492904 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=25 ):( indent = 1, speculation = 97, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918282492904 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=25 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918282492904 ):( fbt:zfs:arc_read:entry ):():( tid=25 ):( indent = 1, speculation = 97, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918282492904 ):( fbt:zfs:arc_read:return ):():( tid=25 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918282492904 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=25 ):( indent = 1, speculation = 98, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918282492904 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=25 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918282492904 ):( fbt:zfs:arc_read:entry ):():( tid=25 ):( indent = 1, speculation = 98, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918282492904 ):( fbt:zfs:arc_read:return ):():( tid=25 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918292448763 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=25 ):( indent = 1, speculation = 99, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918292448763 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=25 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918292448763 ):( fbt:zfs:arc_read:entry ):():( tid=25 ):( indent = 1, speculation = 99, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918292448763 ):( fbt:zfs:arc_read:return ):():( tid=25 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918292448763 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=25 ):( indent = 1, speculation = 100, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918292448763 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=25 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918292448763 ):( fbt:zfs:arc_read:entry ):():( tid=25 ):( indent = 1, speculation = 100, tracing = 1 ):( speculate( self->speculation ) )
+  }( 1442843918302550788 ):( fbt:zfs:arc_read:return ):():( tid=25 ):( indent = 3, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918302550788 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=25 ):( indent = 1, speculation = 101, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918302550788 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=25 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918302550788 ):( fbt:zfs:arc_read:entry ):():( tid=25 ):( indent = 1, speculation = 101, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918302550788 ):( fbt:zfs:arc_read:return ):():( tid=25 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918312455620 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=25 ):( indent = 1, speculation = 102, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918312455620 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=25 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918312455620 ):( fbt:zfs:arc_read:entry ):():( tid=25 ):( indent = 1, speculation = 102, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918312455620 ):( fbt:zfs:arc_read:return ):():( tid=25 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918322541733 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=25 ):( indent = 1, speculation = 103, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918322541733 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=25 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918322541733 ):( fbt:zfs:arc_read:entry ):():( tid=25 ):( indent = 1, speculation = 103, tracing = 1 ):( speculate( self->speculation ) )
+  }( 1442843918322541733 ):( fbt:zfs:arc_read:return ):():( tid=25 ):( indent = 3, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917652428043 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 38, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917652428043 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917652428043 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 38, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917652428043 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917362422083 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=31 ):( indent = 1, speculation = 7, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917362422083 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=31 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917362422083 ):( fbt:zfs:arc_read:entry ):():( tid=31 ):( indent = 1, speculation = 7, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917362422083 ):( fbt:zfs:arc_read:return ):():( tid=31 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917362422083 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=31 ):( indent = 1, speculation = 8, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917362422083 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=31 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917362422083 ):( fbt:zfs:arc_read:entry ):():( tid=31 ):( indent = 1, speculation = 8, tracing = 1 ):( speculate( self->speculation ) )
+                   }( 1442843917372406382 ):( fbt:zfs:arc_read:return ):():( tid=31 ):( indent = 20, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917462421322 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 17, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917462421322 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917462421322 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 17, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917462421322 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917462421322 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 18, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917462421322 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917462421322 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 18, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843917462421322 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917472412043 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 19, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917472412043 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917472412043 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 19, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843917472412043 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917492410243 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 20, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917492410243 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917492410243 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 20, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843917492410243 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917502415097 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 21, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917502415097 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917502415097 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 21, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843917502415097 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917662430376 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 39, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917662430376 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917662430376 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 39, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917662430376 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917522553065 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 23, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917522553065 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917522553065 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 23, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917522553065 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918002449870 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=30 ):( indent = 1, speculation = 63, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918002449870 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=30 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918002449870 ):( fbt:zfs:arc_read:entry ):():( tid=30 ):( indent = 1, speculation = 61, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918002449870 ):( fbt:zfs:arc_read:return ):():( tid=30 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918092435406 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 71, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918092435406 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918092435406 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 71, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918092435406 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918132447672 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 75, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918132447672 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918132447672 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 75, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918132447672 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918142434722 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 77, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918142434722 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918142434722 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 77, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918142434722 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918152440291 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 81, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918152440291 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918152440291 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 81, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918152440291 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918162439184 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 83, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918162439184 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918162439184 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 83, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918162439184 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918172435045 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 86, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918172435045 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918172435045 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 86, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918172435045 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918182452646 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 87, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918182452646 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918182452646 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 87, tracing = 1 ):( speculate( self->speculation ) )
+                   }( 1442843918182452646 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 20, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917452497318 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=28 ):( indent = 1, speculation = 16, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917452497318 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=28 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917452497318 ):( fbt:zfs:arc_read:entry ):():( tid=28 ):( indent = 1, speculation = 16, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917452497318 ):( fbt:zfs:arc_read:return ):():( tid=28 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917642423343 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=3 ):( indent = 1, speculation = 36, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917642423343 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=3 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917642423343 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=3 ):( indent = 1, speculation = 37, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917642423343 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=3 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917672433530 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 40, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917672433530 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917672433530 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 40, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917672433530 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917672433530 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 41, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917672433530 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917672433530 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 41, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917682412422 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917682412422 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 42, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917682412422 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917682412422 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 42, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917682412422 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917832435965 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 58, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917832435965 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917832435965 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 58, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917832435965 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917552406517 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 26, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917552406517 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917552406517 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 26, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917552406517 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917572426546 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 27, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917572426546 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917572426546 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 27, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917572426546 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917572426546 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 28, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917572426546 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917572426546 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 28, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917572426546 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917582407319 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 29, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917582407319 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917582407319 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 29, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917582407319 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917592414398 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 30, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917592414398 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917592414398 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 30, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917592414398 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917602418315 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 31, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917602418315 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917602418315 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 31, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917602418315 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917612414922 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 32, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917612414922 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917612414922 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 32, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917612414922 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917612414922 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 33, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917612414922 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917612414922 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 33, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917622416913 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917622416913 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 34, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917622416913 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917622416913 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 34, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917622416913 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917382396924 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=43 ):( indent = 1, speculation = 10, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917382396924 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=43 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917382396924 ):( fbt:zfs:arc_read:entry ):():( tid=43 ):( indent = 1, speculation = 10, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843917392410993 ):( fbt:zfs:arc_read:return ):():( tid=43 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917402407287 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=43 ):( indent = 1, speculation = 11, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917402407287 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=43 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917402407287 ):( fbt:zfs:arc_read:entry ):():( tid=43 ):( indent = 1, speculation = 11, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917402407287 ):( fbt:zfs:arc_read:return ):():( tid=43 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917412396115 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=43 ):( indent = 1, speculation = 12, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917412396115 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=43 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917412396115 ):( fbt:zfs:arc_read:entry ):():( tid=43 ):( indent = 1, speculation = 12, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917412396115 ):( fbt:zfs:arc_read:return ):():( tid=43 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917422405280 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=43 ):( indent = 1, speculation = 13, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917422405280 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=43 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917422405280 ):( fbt:zfs:arc_read:entry ):():( tid=43 ):( indent = 1, speculation = 13, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917422405280 ):( fbt:zfs:arc_read:return ):():( tid=43 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917432415768 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=43 ):( indent = 1, speculation = 14, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917432415768 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=43 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917432415768 ):( fbt:zfs:arc_read:entry ):():( tid=43 ):( indent = 1, speculation = 14, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917432415768 ):( fbt:zfs:arc_read:return ):():( tid=43 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917432415768 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=43 ):( indent = 1, speculation = 15, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917432415768 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=43 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917442402543 ):( fbt:zfs:arc_read:entry ):():( tid=43 ):( indent = 1, speculation = 15, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843917442403112 ):( fbt:zfs:arc_read:return ):():( tid=43 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917882428053 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=52 ):( indent = 1, speculation = 59, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917882428053 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=52 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917882428053 ):( fbt:zfs:arc_read:entry ):():( tid=52 ):( indent = 1, speculation = 59, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917882428053 ):( fbt:zfs:arc_read:return ):():( tid=52 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918152440291 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=51 ):( indent = 1, speculation = 80, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918152440291 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=51 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918152440291 ):( fbt:zfs:arc_read:entry ):():( tid=51 ):( indent = 1, speculation = 80, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918152440291 ):( fbt:zfs:arc_read:return ):():( tid=51 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918272458488 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=52 ):( indent = 1, speculation = 96, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918272458488 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=52 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918272458488 ):( fbt:zfs:arc_read:entry ):():( tid=52 ):( indent = 1, speculation = 96, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918272458488 ):( fbt:zfs:arc_read:return ):():( tid=52 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917802418269 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 54, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917802418269 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917802418269 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 54, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843917802418269 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917812486175 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 55, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917812486175 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917812486175 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 55, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917812486175 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917822423564 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 57, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917822423564 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917822423564 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 57, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917822423564 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917992433982 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 60, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917992433982 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917992433982 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 60, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918002449870 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918002449870 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=36 ):( indent = 1, speculation = 61, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918002449870 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=36 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918002449870 ):( fbt:zfs:arc_read:entry ):():( tid=36 ):( indent = 1, speculation = 63, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918002449870 ):( fbt:zfs:arc_read:return ):():( tid=36 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917632420715 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=51 ):( indent = 1, speculation = 35, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843917632420715 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=51 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843917632420715 ):( fbt:zfs:arc_read:entry ):():( tid=51 ):( indent = 1, speculation = 35, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843917632420715 ):( fbt:zfs:arc_read:return ):():( tid=51 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+dtrace: 54 failed speculations (no speculative buffer available)
+{( 1442843919042496179 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=27 ):( indent = 1, speculation = 167, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843919042496179 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=27 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843919042496179 ):( fbt:zfs:arc_read:entry ):():( tid=27 ):( indent = 1, speculation = 167, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843919052481595 ):( fbt:zfs:arc_read:return ):():( tid=27 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843919052481595 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=27 ):( indent = 1, speculation = 168, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843919052481595 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=27 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843919052481595 ):( fbt:zfs:arc_read:entry ):():( tid=27 ):( indent = 1, speculation = 168, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843919052481595 ):( fbt:zfs:arc_read:return ):():( tid=27 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843919062526374 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=27 ):( indent = 1, speculation = 169, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843919062526374 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=27 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843919062526374 ):( fbt:zfs:arc_read:entry ):():( tid=27 ):( indent = 1, speculation = 169, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843919062526374 ):( fbt:zfs:arc_read:return ):():( tid=27 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843919072491735 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=27 ):( indent = 1, speculation = 170, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843919072491735 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=27 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843919072491735 ):( fbt:zfs:arc_read:entry ):():( tid=27 ):( indent = 1, speculation = 170, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843919072491735 ):( fbt:zfs:arc_read:return ):():( tid=27 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843919082492333 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=27 ):( indent = 1, speculation = 0, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843919082492333 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=27 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843919012486640 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=25 ):( indent = 1, speculation = 165, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843919012486640 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=25 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843919012486640 ):( fbt:zfs:arc_read:entry ):():( tid=25 ):( indent = 1, speculation = 165, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843919012486640 ):( fbt:zfs:arc_read:return ):():( tid=25 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918512453202 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=51 ):( indent = 1, speculation = 114, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918512453202 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=51 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918512453202 ):( fbt:zfs:arc_read:entry ):():( tid=51 ):( indent = 1, speculation = 114, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918512453202 ):( fbt:zfs:arc_read:return ):():( tid=51 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918602467342 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 124, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918602467342 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918602467342 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 124, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918602467342 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918702470260 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 127, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918702470260 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918702470260 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 127, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918702470260 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918712464326 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 128, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918712464326 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918712464326 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 128, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918712464326 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918832498482 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=36 ):( indent = 1, speculation = 136, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918832498482 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=36 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918832498482 ):( fbt:zfs:arc_read:entry ):():( tid=36 ):( indent = 1, speculation = 136, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918832498482 ):( fbt:zfs:arc_read:return ):():( tid=36 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918872485477 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 144, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918872485477 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918872485477 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 144, tracing = 1 ):( speculate( self->speculation ) )
+  }( 1442843918872485477 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 3, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918882493305 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 147, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918882493305 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918882493305 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 147, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918882493305 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918892488231 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 149, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918892488231 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918892488231 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 149, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918892488231 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918902472635 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 151, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918902472635 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918902472635 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 151, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918902472635 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918912492409 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 154, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918912492409 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918912492409 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 154, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918912492409 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918962530427 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=38 ):( indent = 1, speculation = 160, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918962530427 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=38 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918962530427 ):( fbt:zfs:arc_read:entry ):():( tid=38 ):( indent = 1, speculation = 160, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918962530427 ):( fbt:zfs:arc_read:return ):():( tid=38 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918982482343 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 163, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918982482343 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918982482343 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 163, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918982482343 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918412459585 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=29 ):( indent = 1, speculation = 105, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918412459585 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=29 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918412459585 ):( fbt:zfs:arc_read:entry ):():( tid=29 ):( indent = 1, speculation = 105, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918412459585 ):( fbt:zfs:arc_read:return ):():( tid=29 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918952498000 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=38 ):( indent = 1, speculation = 159, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918952498000 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=38 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918952498000 ):( fbt:zfs:arc_read:entry ):():( tid=38 ):( indent = 1, speculation = 159, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918952498000 ):( fbt:zfs:arc_read:return ):():( tid=38 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918972485059 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=38 ):( indent = 1, speculation = 161, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918972485059 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=38 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918972485059 ):( fbt:zfs:arc_read:entry ):():( tid=38 ):( indent = 1, speculation = 161, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918972485059 ):( fbt:zfs:arc_read:return ):():( tid=38 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918412459585 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 104, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918412459585 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918412459585 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 104, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918412459585 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918422449699 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 106, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918422449699 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918422449699 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 106, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918422449699 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918792489501 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 131, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918792489501 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918792489501 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 131, tracing = 1 ):( speculate( self->speculation ) )
+  }( 1442843918792489501 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 3, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918802490468 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 132, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918802490468 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918802490468 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 132, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918802490468 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918802490468 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 133, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918802490468 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918802490468 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 133, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918812483484 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918812483484 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 134, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918812483484 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918812483484 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 134, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918822491617 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918822491617 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 135, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918822491617 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918822491617 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 135, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918822491617 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918832498482 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 137, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918832498482 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918832498482 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 137, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918842483518 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918842483518 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 138, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918842483518 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918842483518 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 138, tracing = 1 ):( speculate( self->speculation ) )
+  }( 1442843918842483518 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 3, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918852492793 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 139, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918852492793 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918852492793 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 139, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918852492793 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918852492793 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=38 ):( indent = 1, speculation = 140, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918852492793 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=38 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918852492793 ):( fbt:zfs:arc_read:entry ):():( tid=38 ):( indent = 1, speculation = 140, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918852492793 ):( fbt:zfs:arc_read:return ):():( tid=38 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918862504248 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=38 ):( indent = 1, speculation = 144, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918862504248 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=38 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918862504248 ):( fbt:zfs:arc_read:entry ):():( tid=38 ):( indent = 1, speculation = 142, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918862504248 ):( fbt:zfs:arc_read:return ):():( tid=38 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918872485477 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=38 ):( indent = 1, speculation = 145, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918872485477 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=38 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918872485477 ):( fbt:zfs:arc_read:entry ):():( tid=38 ):( indent = 1, speculation = 145, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918872485477 ):( fbt:zfs:arc_read:return ):():( tid=38 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918882493305 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=38 ):( indent = 1, speculation = 146, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918882493305 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=38 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918882493305 ):( fbt:zfs:arc_read:entry ):():( tid=38 ):( indent = 1, speculation = 146, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918882493305 ):( fbt:zfs:arc_read:return ):():( tid=38 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918882493305 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=38 ):( indent = 1, speculation = 148, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918882493305 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=38 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918882493305 ):( fbt:zfs:arc_read:entry ):():( tid=38 ):( indent = 1, speculation = 148, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918882493305 ):( fbt:zfs:arc_read:return ):():( tid=38 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918892488231 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=38 ):( indent = 1, speculation = 150, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918892488231 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=38 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918892488231 ):( fbt:zfs:arc_read:entry ):():( tid=38 ):( indent = 1, speculation = 150, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918902472635 ):( fbt:zfs:arc_read:return ):():( tid=38 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918902472635 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=38 ):( indent = 1, speculation = 153, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918902472635 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=38 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918902472635 ):( fbt:zfs:arc_read:entry ):():( tid=38 ):( indent = 1, speculation = 153, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918902472635 ):( fbt:zfs:arc_read:return ):():( tid=38 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918902472635 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=38 ):( indent = 1, speculation = 153, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918902472635 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=38 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918902472635 ):( fbt:zfs:arc_read:entry ):():( tid=38 ):( indent = 1, speculation = 153, tracing = 1 ):( speculate( self->speculation ) )
+  }( 1442843918912492409 ):( fbt:zfs:arc_read:return ):():( tid=38 ):( indent = 3, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918752478640 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=25 ):( indent = 1, speculation = 129, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918752478640 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=25 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918752478640 ):( fbt:zfs:arc_read:entry ):():( tid=25 ):( indent = 1, speculation = 129, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918752478640 ):( fbt:zfs:arc_read:return ):():( tid=25 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918762493234 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=25 ):( indent = 1, speculation = 130, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918762493234 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=25 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918762493234 ):( fbt:zfs:arc_read:entry ):():( tid=25 ):( indent = 1, speculation = 130, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918762493234 ):( fbt:zfs:arc_read:return ):():( tid=25 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918442459387 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 107, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918442459387 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918442459387 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 107, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918452463360 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918452463360 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 108, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918452463360 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918452463360 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 108, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918452463360 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918462455146 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 109, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918462455146 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918462455146 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 109, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918462455146 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918472463581 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 110, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918472463581 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918472463581 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 110, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918472463581 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918482452477 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 111, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918482452477 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918482452477 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 111, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918482452477 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918492458812 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 112, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918492458812 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918492458812 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 112, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918492458812 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918502466125 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 113, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918502466125 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918502466125 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 113, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918502466125 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918512453202 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 115, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918512453202 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918512453202 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 115, tracing = 1 ):( speculate( self->speculation ) )
+  }( 1442843918522453968 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 3, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918522453968 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 116, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918522453968 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918522453968 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 116, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918522453968 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918532464348 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 117, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918532464348 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918532464348 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 117, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918532464348 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918542465058 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 118, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918542465058 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918542465058 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 118, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918542465058 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918542465058 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 119, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918542465058 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918542465058 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 119, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918542465058 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918552455058 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 120, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918552455058 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918552455058 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 120, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918562473816 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918562473816 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 121, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918562473816 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918562473816 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 121, tracing = 1 ):( speculate( self->speculation ) )
+  }( 1442843918572486602 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 3, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918572486602 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 122, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918572486602 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918582456668 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 122, tracing = 1 ):( speculate( self->speculation ) )
+  }( 1442843918582457298 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 3, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918612457401 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 125, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918612457401 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918612457401 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 125, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918612457401 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918622521865 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=26 ):( indent = 1, speculation = 126, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918622521865 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=26 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918622521865 ):( fbt:zfs:arc_read:entry ):():( tid=26 ):( indent = 1, speculation = 126, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918622521865 ):( fbt:zfs:arc_read:return ):():( tid=26 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918852492793 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=33 ):( indent = 1, speculation = 142, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918852492793 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=33 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918852492793 ):( fbt:zfs:arc_read:entry ):():( tid=33 ):( indent = 1, speculation = 142, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918852492793 ):( fbt:zfs:arc_read:return ):():( tid=33 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843919042496179 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=33 ):( indent = 1, speculation = 166, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843919042496179 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=33 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843919042496179 ):( fbt:zfs:arc_read:entry ):():( tid=33 ):( indent = 1, speculation = 166, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843919042496179 ):( fbt:zfs:arc_read:return ):():( tid=33 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918922496122 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=52 ):( indent = 1, speculation = 155, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918922496122 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=52 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918922496122 ):( fbt:zfs:arc_read:entry ):():( tid=52 ):( indent = 1, speculation = 155, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918922496122 ):( fbt:zfs:arc_read:return ):():( tid=52 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918922496122 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=38 ):( indent = 1, speculation = 156, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918922496122 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=38 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918922496122 ):( fbt:zfs:arc_read:entry ):():( tid=38 ):( indent = 1, speculation = 156, tracing = 1 ):( speculate( self->speculation ) )
+    }( 1442843918922496122 ):( fbt:zfs:arc_read:return ):():( tid=38 ):( indent = 5, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918932497268 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=38 ):( indent = 1, speculation = 157, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918932497268 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=38 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918932497268 ):( fbt:zfs:arc_read:entry ):():( tid=38 ):( indent = 1, speculation = 157, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918932497268 ):( fbt:zfs:arc_read:return ):():( tid=38 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918942499235 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=38 ):( indent = 1, speculation = 158, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918942499235 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=38 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918942499235 ):( fbt:zfs:arc_read:entry ):():( tid=38 ):( indent = 1, speculation = 158, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918942499235 ):( fbt:zfs:arc_read:return ):():( tid=38 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918862504248 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=51 ):( indent = 1, speculation = 142, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918862504248 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=51 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918862504248 ):( fbt:zfs:arc_read:entry ):():( tid=51 ):( indent = 1, speculation = 142, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918862504248 ):( fbt:zfs:arc_read:return ):():( tid=51 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918592461898 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=35 ):( indent = 1, speculation = 123, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918592461898 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=35 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918592461898 ):( fbt:zfs:arc_read:entry ):():( tid=35 ):( indent = 1, speculation = 123, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918592461898 ):( fbt:zfs:arc_read:return ):():( tid=35 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918982482343 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=38 ):( indent = 1, speculation = 162, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918982482343 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=38 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918982482343 ):( fbt:zfs:arc_read:entry ):():( tid=38 ):( indent = 1, speculation = 164, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918982482343 ):( fbt:zfs:arc_read:return ):():( tid=38 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918982482343 ):( fbt:zfs:arc_reactivate_ref:entry ):():( tid=38 ):( indent = 1, speculation = 164, tracing = 1 ):( speculate( self->speculation ) )
+}( 1442843918982482343 ):( fbt:zfs:arc_reactivate_ref:return ):():( tid=38 ):( indent = 1, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+{( 1442843918982482343 ):( fbt:zfs:arc_read:entry ):():( tid=38 ):( indent = 1, speculation = 164, tracing = 1 ):( speculate( self->speculation ) )
+      }( 1442843918982482343 ):( fbt:zfs:arc_read:return ):():( tid=38 ):( indent = 7, speculation = 0, tracing = 1 ):( discard( self->speculation ) )
+dtrace: 158 failed speculations (no speculative buffer available)
+dtrace: 119 failed speculations (no speculative buffer available)
+dtrace: 142 failed speculations (no speculative buffer available)
+dtrace: 102 failed speculations (no speculative buffer available)
+dtrace: 178 failed speculations (no speculative buffer available)
+dtrace: 112 failed speculations (no speculative buffer available)
+dtrace: 38 failed speculations (no speculative buffer available)
+dtrace: 121 failed speculations (no speculative buffer available)
+dtrace: 100 failed speculations (no speculative buffer available)
+dtrace: 110 failed speculations (no speculative buffer available)
+dtrace: 108 failed speculations (no speculative buffer available)
+dtrace: 169 failed speculations (no speculative buffer available)
+dtrace: 102 failed speculations (no speculative buffer available)
+dtrace: 73 failed speculations (no speculative buffer available)
+dtrace: 109 failed speculations (no speculative buffer available)
+dtrace: 238 failed speculations (no speculative buffer available)
+dtrace: 171 failed speculations (no speculative buffer available)
+dtrace: 170 failed speculations (no speculative buffer available)
+dtrace: 142 failed speculations (no speculative buffer available)
+dtrace: 176 failed speculations (no speculative buffer available)
+dtrace: 114 failed speculations (no speculative buffer available)
+dtrace: 106 failed speculations (no speculative buffer available)
+dtrace: 159 failed speculations (no speculative buffer available)
+dtrace: 280 failed speculations (no speculative buffer available)
+dtrace: 440 failed speculations (no speculative buffer available)
+dtrace: 407 failed speculations (no speculative buffer available)
+dtrace: 358 failed speculations (no speculative buffer available)
+dtrace: 464 failed speculations (no speculative buffer available)
+dtrace: 505 failed speculations (no speculative buffer available)
+dtrace: 562 failed speculations (no speculative buffer available)
+dtrace: 474 failed speculations (no speculative buffer available)
+dtrace: 539 failed speculations (no speculative buffer available)
+dtrace: 81 failed speculations (no speculative buffer available)
+dtrace: 160 failed speculations (no speculative buffer available)
+dtrace: 569 failed speculations (no speculative buffer available)
+dtrace: 483 failed speculations (no speculative buffer available)
+dtrace: 380 failed speculations (no speculative buffer available)
+dtrace: 528 failed speculations (no speculative buffer available)
+dtrace: 377 failed speculations (no speculative buffer available)
+dtrace: 193 failed speculations (no speculative buffer available)
+dtrace: 318 failed speculations (no speculative buffer available)
+dtrace: 506 failed speculations (no speculative buffer available)
+dtrace: 146 failed speculations (no speculative buffer available)
+dtrace: 122 failed speculations (no speculative buffer available)
+dtrace: 334 failed speculations (no speculative buffer available)
+dtrace: 637 failed speculations (no speculative buffer available)
+dtrace: 533 failed speculations (no speculative buffer available)
