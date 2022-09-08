@@ -1,0 +1,18 @@
+{
+  "catalogs": {},
+  "aliases": {
+    "datahub-protobuf": {
+      "script-ref": "https://github.com/datahub-project/datahub/raw/b9068ffd2ef527a2b24b5d3828a9cc6c0f23b4fb/metadata-integration/java/datahub-protobuf-example/libs/datahub-protobuf.jar",
+      "dependencies": [
+        "org.slf4j:slf4j-simple:1.7.30",
+        "io.acryl:datahub-client:0.8.44",
+        "com.google.protobuf:protobuf-java:3.19.3",
+        "org.jgrapht:jgrapht-core:1.5.1",
+        "com.google.guava:guava:27.0.1-jre",
+        "com.google.code.gson:gson:2.8.6"
+      ],
+      "main": "datahub.protobuf.App"
+    }
+  },
+  "templates": {}
+}

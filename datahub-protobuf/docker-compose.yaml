@@ -1,0 +1,17 @@
+version: "3"
+services:
+  devtools:
+    build:
+      context: devtools
+      dockerfile: Dockerfile
+    working_dir: /srv/workspace
+    volumes:
+      - .:/srv/workspace:z
+      - xdg-cache-home:/root/.cache
+      - m2-home:/root/.m2
+    environment:
+      - "DATAHUB_API=${DATAHUB_API:?Need DATAHUB_API}"
+      - "DATAHUB_TOKEN=${DATAHUB_TOKEN:?Need DATAHUB_TOKEN}"
+volumes:
+  xdg-cache-home: {}
+  m2-home: {}
