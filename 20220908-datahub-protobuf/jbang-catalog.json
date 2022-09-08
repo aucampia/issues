@@ -2,7 +2,7 @@
   "catalogs": {},
   "aliases": {
     "datahub-protobuf": {
-      "script-ref": "https://github.com/datahub-project/datahub/raw/b9068ffd2ef527a2b24b5d3828a9cc6c0f23b4fb/metadata-integration/java/datahub-protobuf-example/libs/datahub-protobuf.jar",
+      "script-ref": "https://raw.githubusercontent.com/datahub-project/datahub/b9068ffd2ef527a2b24b5d3828a9cc6c0f23b4fb/metadata-integration/java/datahub-protobuf-example/libs/datahub-protobuf.jar",
       "dependencies": [
         "org.slf4j:slf4j-simple:1.7.30",
         "io.acryl:datahub-client:0.8.44",

@@ -2,8 +2,14 @@
 
 ```bash
 # ensure that DATAHUB_TOKEN and DATAHUB_API is set
+
+# build image
 docker compose build
+# publish metadata to datahub
 docker compose run --rm devtools make publish
+
+docker compose run --rm devtools bash -c 'jbang info classpath --catalog=jbang-catalog.json datahub-protobuf | tr ":" "\\000" | xargs -0 -n1 -t bsdtar -tvf | grep slf4j'
+
 ```
 
 
@@ -29,4 +35,12 @@ jbang run '--catalog=jbang-catalog.json' datahub-protobuf var/generated/main.dsc
 SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
 SLF4J: Defaulting to no-operation (NOP) logger implementation
 SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+```
+
+
+## jbang bug
+
+```
+curl --silent -L https://github.com/aucampia/issues/archive/heads/main.tar.gz | tar --strip-components 1 --wildcards -zxvf - -C /var/tmp/ '*/20220908-datahub-protobuf/'
+(cd /var/tmp/20220908-datahub-protobuf/ && docker compose run --rm devtools jbang info classpath --verbose --catalog=jbang-catalog.json datahub-protobuf)
 ```
