@@ -6,9 +6,9 @@ version: v1
 # https://docs.buf.build/bsr/overview#module-cache
 # ~/.cache/buf
 deps:
-  - buf.build/googleapis/googleapis:7529bb85c9cd4c489dba05e04769c547
-  - buf.build/grpc-ecosystem/grpc-gateway:00116f302b12478b85deb33b734e026c
-  - buf.build/grpc/grpc:e35016be50db469a97b06a4418fe917c
+  - buf.build/googleapis/googleapis
+  - buf.build/grpc-ecosystem/grpc-gateway
+  - buf.build/grpc/grpc
   - buf.build/unitytestorg/gen-bq-schema
 build:
   excludes: []

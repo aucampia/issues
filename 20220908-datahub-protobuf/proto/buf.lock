@@ -4,27 +4,27 @@ deps:
   - remote: buf.build
     owner: cncf
     repository: xds
-    commit: 0492166643854ea08814f4349286f9cb
+    commit: f6f9b109ae2f445e9c1c00bb765b5373
   - remote: buf.build
     owner: envoyproxy
     repository: envoy
-    commit: be891e48766942f9aa8d6b91d98e8816
+    commit: 3b42f172a19b4a138a32f55dc9867ca7
   - remote: buf.build
     owner: envoyproxy
     repository: protoc-gen-validate
-    commit: dc09a417d27241f7b069feae2cd74a0e
+    commit: 45685e052c7e406b9fbd441fc7a568a5
   - remote: buf.build
     owner: googleapis
     repository: googleapis
-    commit: 7529bb85c9cd4c489dba05e04769c547
+    commit: 8d7204855ec14631a499bd7393ce1970
   - remote: buf.build
     owner: grpc
     repository: grpc
-    commit: e35016be50db469a97b06a4418fe917c
+    commit: 428bdb303f1c4bb9b33364ed61df516a
   - remote: buf.build
     owner: grpc-ecosystem
     repository: grpc-gateway
-    commit: 00116f302b12478b85deb33b734e026c
+    commit: bc28b723cd774c32b6fbc77621518765
   - remote: buf.build
     owner: opencensus
     repository: opencensus
@@ -32,7 +32,7 @@ deps:
   - remote: buf.build
     owner: opentelemetry
     repository: opentelemetry
-    commit: 7cb99615439848c0ab760e4703be969f
+    commit: 038316eb65414db8bb0cd88c47a4ee0f
   - remote: buf.build
     owner: prometheus
     repository: client-model

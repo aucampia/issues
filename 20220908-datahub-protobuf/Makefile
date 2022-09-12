@@ -54,7 +54,7 @@ publish: $(generated_dir)/main.dsc
 
 
 .PHONY: clean
-clean:
+clean: clean-$(generated_dir)/
 
 
 ########################################################################
