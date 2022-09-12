@@ -1,7 +1,7 @@
 {
   "catalogs": {},
   "aliases": {
-    "datahub-protobuf": {
+    "datahub-protobuf-old": {
       "script-ref": "https://raw.githubusercontent.com/datahub-project/datahub/b9068ffd2ef527a2b24b5d3828a9cc6c0f23b4fb/metadata-integration/java/datahub-protobuf-example/libs/datahub-protobuf.jar",
       "dependencies": [
         "org.slf4j:slf4j-simple:1.7.30",
@@ -11,6 +11,10 @@
         "com.google.guava:guava:27.0.1-jre",
         "com.google.code.gson:gson:2.8.6"
       ],
+      "main": "datahub.protobuf.App"
+    },
+    "datahub-protobuf": {
+      "script-ref": "io.acryl:datahub-protobuf:0.8.44-2rc1",
       "main": "datahub.protobuf.App"
     }
   },
