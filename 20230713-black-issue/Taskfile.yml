@@ -1,0 +1,15 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  GREETING: Hello, World!
+
+tasks:
+  default:
+    cmds:
+      - python3.11 badfile.py PASSWORD
+      - python3.11 badfile.py SECRET
+      - pipx run --spec=black==23.3.0 black --diff badfile.py
+      - pipx run --spec=black==23.7.0 black --diff badfile.py
+
