@@ -4,7 +4,6 @@ SHELL [ "/bin/bash", "-o", "pipefail", "-c" ]
 
 FROM python AS toolchain
 
-RUN echo MARK-000
 
 RUN \
     apt-get update && \
@@ -23,6 +22,8 @@ RUN \
 ENTRYPOINT [ ]
 
 FROM toolchain AS check
+
+RUN echo MARK-000
 
 COPY poetry.lock pyproject.toml /var/tmp/project/
 
