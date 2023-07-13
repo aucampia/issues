@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "example"
+version = "0.0.0"
+description = "Illustrate a bug"
+authors = ["Iwan Aucamp <aucampia@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+dbt-postgres = {version = "^1.5.2", allow-prereleases = false}
+sqlparse = {version = "^0.4.3", allow-prereleases = false}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
