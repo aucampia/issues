@@ -1,0 +1,9 @@
+FROM docker.io/jbangdev/jbang-action:0.96.4 AS jbang-action
+
+ENV jbang_catalog_json=''
+
+RUN \
+    jbang trust add https://github.com/datahub-project/datahub/ && \
+    jbang trust add  https://raw.githubusercontent.com/datahub-project/datahub/ && \
+    printenv jbang_catalog_json | base64 -d | tee /dev/stder > /var/tmp/jbang-catalog.json
+
