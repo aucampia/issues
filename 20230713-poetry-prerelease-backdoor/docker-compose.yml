@@ -1,0 +1,15 @@
+version: "3.8"
+services:
+  toolchain:
+    image: ocireg.invalid/aucampia.github.io/20230713-poetry-prerelease-backdoor:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: toolchain
+    working_dir: /srv/workspace
+    volumes:
+      - .:/srv/workspace:z
+      - ${XDG_CACHE_HOME:-xdg-cache-home}:/root/.cache
+
+volumes:
+  xdg-cache-home: {}

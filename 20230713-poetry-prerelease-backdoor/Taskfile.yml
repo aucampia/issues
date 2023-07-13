@@ -1,0 +1,23 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  PIP_COMPILE: pipx run --spec=pip-tools pip-compile
+
+tasks:
+  default:
+    cmds:
+      - echo "{{.GREETING}}"
+  pip-compile:all:
+    desc: run pip-compile on all requirements.in files
+    cmds:
+      - cmd: |
+          shopt -s globstar;
+          set -x;
+          for file in ./**/requirements*.in
+          do
+            {{.PIP_COMPILE}} --quiet --annotate --emit-options \
+              --resolver backtracking --generate-hashes \
+              "${file}"
+          done
