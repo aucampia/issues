@@ -1,7 +1,6 @@
 version: "3.8"
 services:
   toolchain:
-    image: ocireg.invalid/aucampia.github.io/20230713-poetry-prerelease-backdoor:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -10,6 +9,11 @@ services:
     volumes:
       - .:/srv/workspace:z
       - ${XDG_CACHE_HOME:-xdg-cache-home}:/root/.cache
+  check:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: check
 
 volumes:
   xdg-cache-home: {}
