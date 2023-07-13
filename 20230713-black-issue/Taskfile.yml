@@ -9,11 +9,11 @@ tasks:
   default:
     cmds:
       - python3.11 --version
-      - python3.11 minimal.py
-      - pipx run --python python3.11 --spec=black==23.3.0 black --diff minimal.py
-      - "pipx run --python python3.11 --spec=black==23.7.0 black --diff minimal.py || :"
+      - python3.11 file.py
+      - pipx run --python python3.11 --spec=black==23.3.0 black --target-version py311 --diff file.py
+      - "pipx run --python python3.11 --spec=black==23.7.0 black --target-version py311 --diff file.py || :"
       - python3.11 badfile.py PASSWORD
       - python3.11 badfile.py SECRET
-      - pipx run --python python3.11 --spec=black==23.3.0 black --diff badfile.py
-      - "pipx run --python python3.11 --spec=black==23.7.0 black --diff badfile.py || :"
+      - pipx run --python python3.11 --spec=black==23.3.0 black --target-version py311 --diff badfile.py
+      - "pipx run --python python3.11 --spec=black==23.7.0 black --target-version py311 --diff badfile.py || :"
 
