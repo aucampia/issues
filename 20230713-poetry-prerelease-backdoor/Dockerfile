@@ -27,10 +27,16 @@ COPY poetry.lock pyproject.toml /var/tmp/project/
 WORKDIR /var/tmp/project
 
 # Install dependencies
-RUN poetry install
+RUN \
+    poetry install && \
+    poetry show --tree && \
+    true
 
 # Update sqlparse
-RUN poetry update sqlparse
+RUN \
+    poetry update sqlparse && \
+    poetry show --tree && \
+    true
 
 # Check that sqlparse is not a pre-release version
 RUN \
