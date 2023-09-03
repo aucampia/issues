@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "20230822-rdflib-dataset-query"
+version = "0.0.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+packages = [{include = "invalid"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+rdflib = "^7.0.0"
+oxrdflib = "^0.3.6"
+
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.5.1"
+ruff = "^0.0.285"
+pytest = "^7.4.0"
+black = "^23.7.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

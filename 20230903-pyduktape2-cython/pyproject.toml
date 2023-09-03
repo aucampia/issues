@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "20230903-pyduktape2-cython"
+version = "0.0.0"
+description = ""
+authors = [""]
+readme = "README.md"
+packages = [{include = "20230903_pyduktape2_cython"}]
+
+[tool.poetry.dependencies]
+python = "^3.8.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
