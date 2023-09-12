@@ -1,0 +1,75 @@
+2023-09-12T08:39:36.156491+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received dns UDP packet of size 34, ifindex=0, ttl=64, fragsize=0, sender=127.0.0.1, destination=127.0.0.53
+2023-09-12T08:39:36.156504+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Got DNS stub UDP query packet for id 54211
+2023-09-12T08:39:36.156535+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Looking up RR for local IN SOA.
+2023-09-12T08:39:36.156697+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Removing cache entry for local IN SOA (expired 988s ago)
+2023-09-12T08:39:36.156708+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Cache miss for local IN SOA
+2023-09-12T08:39:36.156716+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Firing regular transaction 20546 for <local IN SOA> scope dns on tailscale0/* (validate=yes).
+2023-09-12T08:39:36.156726+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Using feature level UDP+EDNS0 for transaction 20546.
+2023-09-12T08:39:36.156733+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Using DNS server 100.100.100.100 for transaction 20546.
+2023-09-12T08:39:36.156809+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Announcing packet size 1252 in egress EDNS(0) packet.
+2023-09-12T08:39:36.156819+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Emitting UDP, link MTU is 1280, socket MTU is 0, minimal MTU is 40
+2023-09-12T08:39:36.156825+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Sending query packet with id 20546 of size 34.
+2023-09-12T08:39:36.156869+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Removing cache entry for mobile.events.data.microsoft.com IN CNAME (expired 10s ago)
+2023-09-12T08:39:36.156886+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Removing cache entry for mail.google.com IN A (expired 10s ago)
+2023-09-12T08:39:36.156910+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Removing cache entry for update.code.visualstudio.com IN CNAME (expired 9s ago)
+2023-09-12T08:39:36.156927+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Removing cache entry for vscode-update-g6gcb6ggdthkctd9.z01.azurefd.net IN CNAME (expired 9s ago)
+2023-09-12T08:39:36.156938+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Removing cache entry for mail.google.com IN AAAA (expired 9s ago)
+2023-09-12T08:39:36.156949+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Removing cache entry for people.skype.com IN CNAME (expired 6s ago)
+2023-09-12T08:39:36.156961+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Removing cache entry for people-service-prod.trafficmanager.net IN CNAME (expired 6s ago)
+2023-09-12T08:39:36.156972+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Removing cache entry for part-0025.t-0009.t-msedge.net IN AAAA (expired 5s ago)
+2023-09-12T08:39:36.156984+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Removing cache entry for onedscolprdeus08.eastus.cloudapp.azure.com IN A (expired 4s ago)
+2023-09-12T08:39:36.156993+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Removing cache entry for b-0008.b-msedge.net IN A (expired 1s ago)
+2023-09-12T08:39:36.157003+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Cache miss for local IN SOA
+2023-09-12T08:39:36.157011+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Firing regular transaction 64163 for <local IN SOA> scope dns on wlp2s0/* (validate=yes).
+2023-09-12T08:39:36.157024+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Using feature level UDP for transaction 64163.
+2023-09-12T08:39:36.157031+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Using DNS server 192.168.1.1 for transaction 64163.
+2023-09-12T08:39:36.157080+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Emitting UDP, link MTU is 1500, socket MTU is 0, minimal MTU is 40
+2023-09-12T08:39:36.157086+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Sending query packet with id 64163 of size 23.
+2023-09-12T08:39:36.157131+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Processing query...
+2023-09-12T08:39:36.157760+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received dns UDP packet of size 23, ifindex=4, ttl=0, fragsize=0, sender=100.100.100.100, destination=100.119.7.71
+2023-09-12T08:39:36.157766+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Processing incoming packet of size 23 on transaction 20546 (rcode=SERVFAIL).
+2023-09-12T08:39:36.157771+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Server returned error SERVFAIL, retrying transaction.
+2023-09-12T08:39:36.157775+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Retrying transaction 20546.
+2023-09-12T08:39:36.157782+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Cache miss for local IN SOA
+2023-09-12T08:39:36.157787+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Firing regular transaction 20546 for <local IN SOA> scope dns on tailscale0/* (validate=yes).
+2023-09-12T08:39:36.157790+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Using feature level UDP+EDNS0 for transaction 20546.
+2023-09-12T08:39:36.157794+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Announcing packet size 1252 in egress EDNS(0) packet.
+2023-09-12T08:39:36.157799+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Emitting UDP, link MTU is 1280, socket MTU is 1280, minimal MTU is 40
+2023-09-12T08:39:36.157804+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Sending query packet with id 20546 of size 34.
+2023-09-12T08:39:36.158101+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received dns UDP packet of size 23, ifindex=4, ttl=0, fragsize=0, sender=100.100.100.100, destination=100.119.7.71
+2023-09-12T08:39:36.158105+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Processing incoming packet of size 23 on transaction 20546 (rcode=SERVFAIL).
+2023-09-12T08:39:36.158109+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Server returned error SERVFAIL, retrying transaction with reduced feature level UDP.
+2023-09-12T08:39:36.158112+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Retrying transaction 20546.
+2023-09-12T08:39:36.158120+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Cache miss for local IN SOA
+2023-09-12T08:39:36.158124+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Firing regular transaction 20546 for <local IN SOA> scope dns on tailscale0/* (validate=yes).
+2023-09-12T08:39:36.158127+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Using feature level UDP for transaction 20546.
+2023-09-12T08:39:36.158133+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Emitting UDP, link MTU is 1280, socket MTU is 1280, minimal MTU is 40
+2023-09-12T08:39:36.158137+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Sending query packet with id 20546 of size 23.
+2023-09-12T08:39:36.158310+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received dns UDP packet of size 23, ifindex=4, ttl=0, fragsize=0, sender=100.100.100.100, destination=100.119.7.71
+2023-09-12T08:39:36.158315+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Processing incoming packet of size 23 on transaction 20546 (rcode=SERVFAIL).
+2023-09-12T08:39:36.158318+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Server returned error: SERVFAIL
+2023-09-12T08:39:36.158331+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Added SERVFAIL cache entry for local IN SOA 10s
+2023-09-12T08:39:36.158336+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Regular transaction 20546 for <local IN SOA> on scope dns on tailscale0/* now complete with <rcode-failure> from network (unsigned; non-confidential).
+2023-09-12T08:39:36.160637+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received dns UDP packet of size 98, ifindex=3, ttl=0, fragsize=0, sender=192.168.1.1, destination=192.168.1.30
+2023-09-12T08:39:36.160648+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Processing incoming packet of size 98 on transaction 64163 (rcode=NXDOMAIN).
+2023-09-12T08:39:36.160676+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Regular transaction 64163 for <local IN SOA> on scope dns on wlp2s0/* now complete with <rcode-failure> from network (unsigned; non-confidential).
+2023-09-12T08:39:36.160702+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Freeing transaction 20546.
+2023-09-12T08:39:36.160738+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Sending response packet with id 54211 on interface 1/AF_INET of size 109.
+2023-09-12T08:39:36.160788+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Freeing transaction 64163.
+2023-09-12T08:39:36.262263+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received mdns UDP packet of size 38, ifindex=41, ttl=255, fragsize=0, sender=fd42:3bf0:ad2f:a980::1, destination=ff02::fb
+2023-09-12T08:39:36.262303+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received mdns UDP packet of size 38, ifindex=41, ttl=255, fragsize=0, sender=192.168.4.1, destination=224.0.0.251
+2023-09-12T08:39:36.262326+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received mdns UDP packet of size 38, ifindex=29, ttl=255, fragsize=0, sender=fe80::216:3eff:fe83:9ff0, destination=ff02::fb
+2023-09-12T08:39:36.262347+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received mdns UDP packet of size 38, ifindex=29, ttl=255, fragsize=0, sender=10.208.100.1, destination=224.0.0.251
+2023-09-12T08:39:36.262367+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received mdns UDP packet of size 38, ifindex=9, ttl=255, fragsize=0, sender=172.17.0.1, destination=224.0.0.251
+2023-09-12T08:39:36.262385+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received mdns UDP packet of size 38, ifindex=7, ttl=255, fragsize=0, sender=172.18.0.1, destination=224.0.0.251
+2023-09-12T08:39:36.262403+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received mdns UDP packet of size 38, ifindex=3, ttl=255, fragsize=0, sender=192.168.1.30, destination=224.0.0.251
+2023-09-12T08:39:36.262423+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received mdns UDP packet of size 38, ifindex=0, ttl=255, fragsize=0, sender=127.0.0.1, destination=224.0.0.251
+2023-09-12T08:39:36.262720+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received mdns UDP packet of size 48, ifindex=41, ttl=255, fragsize=0, sender=192.168.4.159, destination=224.0.0.251
+2023-09-12T08:39:36.262732+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Got mDNS reply packet
+2023-09-12T08:39:36.262754+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Checking for conflicts...
+2023-09-12T08:39:36.262768+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Removing cache entry for sandbox-server.local IN A (expired 280s ago)
+2023-09-12T08:39:36.262847+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Added positive unauthenticated non-confidential cache entry for sandbox-server.local IN A 120s on lxdbrk0/INET/192.168.4.159
+2023-09-12T08:39:36.262873+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received mdns UDP packet of size 48, ifindex=41, ttl=255, fragsize=0, sender=192.168.4.159, destination=224.0.0.251
+2023-09-12T08:39:36.262881+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Got mDNS reply packet
+2023-09-12T08:39:36.262891+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Checking for conflicts...
+2023-09-12T08:39:36.262965+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Added positive unauthenticated non-confidential cache entry for sandbox-server.local IN A 120s on lxdbrk0/INET/192.168.4.159

@@ -1,0 +1,217 @@
+2023-09-12T08:32:55.983329+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received dns UDP packet of size 49, ifindex=0, ttl=64, fragsize=0, sender=127.0.0.1, destination=127.0.0.53
+2023-09-12T08:32:55.983339+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Got DNS stub UDP query packet for id 23653
+2023-09-12T08:32:55.983369+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Looking up RR for sandbox-server.local IN AAAA.
+2023-09-12T08:32:55.983557+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Cache miss for sandbox-server.local IN AAAA
+2023-09-12T08:32:55.983567+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Firing regular transaction 43783 for <sandbox-server.local IN AAAA> scope mdns on lxdbr0/INET6 (validate=yes).
+2023-09-12T08:32:55.983575+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Delaying mdns transaction 43783 for 0us.
+2023-09-12T08:32:55.983583+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Cache miss for sandbox-server.local IN AAAA
+2023-09-12T08:32:55.983589+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Firing regular transaction 12501 for <sandbox-server.local IN AAAA> scope mdns on lxdbrk0/INET6 (validate=yes).
+2023-09-12T08:32:55.983596+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Delaying mdns transaction 12501 for 0us.
+2023-09-12T08:32:55.983603+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Processing query...
+2023-09-12T08:32:55.983636+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received dns UDP packet of size 49, ifindex=0, ttl=64, fragsize=0, sender=127.0.0.1, destination=127.0.0.53
+2023-09-12T08:32:55.983641+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Got DNS stub UDP query packet for id 13874
+2023-09-12T08:32:55.983660+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Looking up RR for sandbox-server.local IN A.
+2023-09-12T08:32:55.983758+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Cache miss for sandbox-server.local IN A
+2023-09-12T08:32:55.983764+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Firing regular transaction 1289 for <sandbox-server.local IN A> scope mdns on lxdbr0/INET (validate=yes).
+2023-09-12T08:32:55.983771+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Delaying mdns transaction 1289 for 0us.
+2023-09-12T08:32:55.983783+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Cache miss for sandbox-server.local IN A
+2023-09-12T08:32:55.983789+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Firing regular transaction 54050 for <sandbox-server.local IN A> scope mdns on wlp2s0/INET (validate=yes).
+2023-09-12T08:32:55.983795+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Delaying mdns transaction 54050 for 0us.
+2023-09-12T08:32:55.983806+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Removing cache entry for sandbox-server.local IN A (expired 367s ago)
+2023-09-12T08:32:55.983816+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Cache miss for sandbox-server.local IN A
+2023-09-12T08:32:55.983822+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Firing regular transaction 4104 for <sandbox-server.local IN A> scope mdns on lxdbrk0/INET (validate=yes).
+2023-09-12T08:32:55.983827+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Delaying mdns transaction 4104 for 0us.
+2023-09-12T08:32:55.983834+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Processing query...
+2023-09-12T08:32:55.983852+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Initial jitter phase for transaction 12501 elapsed.
+2023-09-12T08:32:55.983858+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Retrying transaction 12501.
+2023-09-12T08:32:55.983866+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Cache miss for sandbox-server.local IN AAAA
+2023-09-12T08:32:55.983873+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Firing regular transaction 12501 for <sandbox-server.local IN AAAA> scope mdns on lxdbrk0/INET6 (validate=yes).
+2023-09-12T08:32:55.983889+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Sending query packet with id 0 on interface 41/AF_INET6 of size 38.
+2023-09-12T08:32:55.984024+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Initial jitter phase for transaction 43783 elapsed.
+2023-09-12T08:32:55.984027+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Retrying transaction 43783.
+2023-09-12T08:32:55.984033+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Cache miss for sandbox-server.local IN AAAA
+2023-09-12T08:32:55.984037+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Firing regular transaction 43783 for <sandbox-server.local IN AAAA> scope mdns on lxdbr0/INET6 (validate=yes).
+2023-09-12T08:32:55.984045+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Sending query packet with id 0 on interface 29/AF_INET6 of size 38.
+2023-09-12T08:32:55.984094+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Initial jitter phase for transaction 4104 elapsed.
+2023-09-12T08:32:55.984098+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Retrying transaction 4104.
+2023-09-12T08:32:55.984104+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Cache miss for sandbox-server.local IN A
+2023-09-12T08:32:55.984108+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Firing regular transaction 4104 for <sandbox-server.local IN A> scope mdns on lxdbrk0/INET (validate=yes).
+2023-09-12T08:32:55.984116+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Sending query packet with id 0 on interface 41/AF_INET of size 38.
+2023-09-12T08:32:55.984176+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Initial jitter phase for transaction 54050 elapsed.
+2023-09-12T08:32:55.984181+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Retrying transaction 54050.
+2023-09-12T08:32:55.984188+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Cache miss for sandbox-server.local IN A
+2023-09-12T08:32:55.984192+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Firing regular transaction 54050 for <sandbox-server.local IN A> scope mdns on wlp2s0/INET (validate=yes).
+2023-09-12T08:32:55.984201+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Sending query packet with id 0 on interface 3/AF_INET of size 38.
+2023-09-12T08:32:55.984252+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Initial jitter phase for transaction 1289 elapsed.
+2023-09-12T08:32:55.984255+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Retrying transaction 1289.
+2023-09-12T08:32:55.984258+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Cache miss for sandbox-server.local IN A
+2023-09-12T08:32:55.984262+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Firing regular transaction 1289 for <sandbox-server.local IN A> scope mdns on lxdbr0/INET (validate=yes).
+2023-09-12T08:32:55.984270+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Sending query packet with id 0 on interface 29/AF_INET of size 38.
+2023-09-12T08:32:55.984312+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received mdns UDP packet of size 38, ifindex=41, ttl=255, fragsize=0, sender=fe80::216:3eff:fea6:4b47, destination=ff02::fb
+2023-09-12T08:32:55.984324+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received mdns UDP packet of size 38, ifindex=41, ttl=255, fragsize=0, sender=192.168.4.1, destination=224.0.0.251
+2023-09-12T08:32:55.984336+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received mdns UDP packet of size 38, ifindex=29, ttl=255, fragsize=0, sender=fe80::216:3eff:fe83:9ff0, destination=ff02::fb
+2023-09-12T08:32:55.984348+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received mdns UDP packet of size 38, ifindex=3, ttl=255, fragsize=0, sender=192.168.1.30, destination=224.0.0.251
+2023-09-12T08:32:55.984360+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received mdns UDP packet of size 38, ifindex=29, ttl=255, fragsize=0, sender=10.208.100.1, destination=224.0.0.251
+2023-09-12T08:32:55.984491+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received mdns UDP packet of size 48, ifindex=41, ttl=255, fragsize=0, sender=192.168.4.159, destination=224.0.0.251
+2023-09-12T08:32:55.984497+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Got mDNS reply packet
+2023-09-12T08:32:55.984511+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Checking for conflicts...
+2023-09-12T08:32:55.984516+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Processing incoming packet of size 48 on transaction 4104 (rcode=SUCCESS).
+2023-09-12T08:32:55.984522+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Regular transaction 4104 for <sandbox-server.local IN A> on scope mdns on lxdbrk0/INET now complete with <success> from network (unsigned; non-confidential).
+2023-09-12T08:32:55.984530+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Freeing transaction 1289.
+2023-09-12T08:32:55.984535+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Freeing transaction 54050.
+2023-09-12T08:32:55.984549+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Sending response packet with id 13874 on interface 1/AF_INET of size 65.
+2023-09-12T08:32:55.984569+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Freeing transaction 4104.
+2023-09-12T08:32:55.984608+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Added positive unauthenticated non-confidential cache entry for sandbox-server.local IN A 120s on lxdbrk0/INET/192.168.4.159
+2023-09-12T08:32:55.984711+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received mdns UDP packet of size 48, ifindex=41, ttl=255, fragsize=0, sender=192.168.4.159, destination=224.0.0.251
+2023-09-12T08:32:55.984715+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Got mDNS reply packet
+2023-09-12T08:32:55.984720+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Checking for conflicts...
+2023-09-12T08:32:55.984739+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Added positive unauthenticated non-confidential cache entry for sandbox-server.local IN A 120s on lxdbrk0/INET/192.168.4.159
+2023-09-12T08:32:57.043319+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Timeout reached on transaction 12501.
+2023-09-12T08:32:57.043336+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Retrying transaction 12501.
+2023-09-12T08:32:57.043368+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Cache miss for sandbox-server.local IN AAAA
+2023-09-12T08:32:57.043382+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Firing regular transaction 12501 for <sandbox-server.local IN AAAA> scope mdns on lxdbrk0/INET6 (validate=yes).
+2023-09-12T08:32:57.043426+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Sending query packet with id 0 on interface 41/AF_INET6 of size 38.
+2023-09-12T08:32:57.043637+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Timeout reached on transaction 43783.
+2023-09-12T08:32:57.043646+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Retrying transaction 43783.
+2023-09-12T08:32:57.043664+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Cache miss for sandbox-server.local IN AAAA
+2023-09-12T08:32:57.043675+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Firing regular transaction 43783 for <sandbox-server.local IN AAAA> scope mdns on lxdbr0/INET6 (validate=yes).
+2023-09-12T08:32:57.043703+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Sending query packet with id 0 on interface 29/AF_INET6 of size 38.
+2023-09-12T08:32:57.043816+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received mdns UDP packet of size 38, ifindex=41, ttl=255, fragsize=0, sender=fe80::216:3eff:fea6:4b47, destination=ff02::fb
+2023-09-12T08:32:57.043850+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received mdns UDP packet of size 38, ifindex=29, ttl=255, fragsize=0, sender=fe80::216:3eff:fe83:9ff0, destination=ff02::fb
+2023-09-12T08:32:59.293383+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Timeout reached on transaction 12501.
+2023-09-12T08:32:59.293400+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Retrying transaction 12501.
+2023-09-12T08:32:59.293429+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Cache miss for sandbox-server.local IN AAAA
+2023-09-12T08:32:59.293441+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Firing regular transaction 12501 for <sandbox-server.local IN AAAA> scope mdns on lxdbrk0/INET6 (validate=yes).
+2023-09-12T08:32:59.293478+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Sending query packet with id 0 on interface 41/AF_INET6 of size 38.
+2023-09-12T08:32:59.293666+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Timeout reached on transaction 43783.
+2023-09-12T08:32:59.293675+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Retrying transaction 43783.
+2023-09-12T08:32:59.293690+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Cache miss for sandbox-server.local IN AAAA
+2023-09-12T08:32:59.293699+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Firing regular transaction 43783 for <sandbox-server.local IN AAAA> scope mdns on lxdbr0/INET6 (validate=yes).
+2023-09-12T08:32:59.293718+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Sending query packet with id 0 on interface 29/AF_INET6 of size 38.
+2023-09-12T08:32:59.293848+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received mdns UDP packet of size 38, ifindex=41, ttl=255, fragsize=0, sender=fe80::216:3eff:fea6:4b47, destination=ff02::fb
+2023-09-12T08:32:59.293880+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received mdns UDP packet of size 38, ifindex=29, ttl=255, fragsize=0, sender=fe80::216:3eff:fe83:9ff0, destination=ff02::fb
+2023-09-12T08:33:00.987971+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received dns UDP packet of size 49, ifindex=0, ttl=64, fragsize=0, sender=127.0.0.1, destination=127.0.0.53
+2023-09-12T08:33:00.987983+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Got DNS stub UDP query packet for id 13978
+2023-09-12T08:33:00.988016+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Looking up RR for sandbox-server.local IN AAAA.
+2023-09-12T08:33:00.988196+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Processing query...
+2023-09-12T08:33:03.543447+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Timeout reached on transaction 12501.
+2023-09-12T08:33:03.543466+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Retrying transaction 12501.
+2023-09-12T08:33:03.543488+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Regular transaction 12501 for <sandbox-server.local IN AAAA> on scope mdns on lxdbrk0/INET6 now complete with <attempts-max-reached> from none (unsigned; non-confidential).
+2023-09-12T08:33:03.543541+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Timeout reached on transaction 43783.
+2023-09-12T08:33:03.543551+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Retrying transaction 43783.
+2023-09-12T08:33:03.543562+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Regular transaction 43783 for <sandbox-server.local IN AAAA> on scope mdns on lxdbr0/INET6 now complete with <attempts-max-reached> from none (unsigned; non-confidential).
+2023-09-12T08:33:03.543606+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Freeing transaction 12501.
+2023-09-12T08:33:03.543631+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Freeing transaction 43783.
+2023-09-12T08:33:03.975828+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink: New incoming connection.
+2023-09-12T08:33:03.975870+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink: Connections of user 1000: 0 (of 576 max)
+2023-09-12T08:33:03.975884+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: Setting state idle-server
+2023-09-12T08:33:03.975988+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: New incoming message: {"method":"io.systemd.Resolve.ResolveHostname","parameters":{"name":"azwcus1-client-s.gateway.messenger.live.com","flags":0}}
+2023-09-12T08:33:03.976033+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: Changing state idle-server → processing-method
+2023-09-12T08:33:03.976207+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: idn2_lookup_u8: azwcus1-client-s.gateway.messenger.live.com → azwcus1-client-s.gateway.messenger.live.com
+2023-09-12T08:33:03.976228+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Looking up RR for azwcus1-client-s.gateway.messenger.live.com IN A.
+2023-09-12T08:33:03.976236+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Looking up RR for azwcus1-client-s.gateway.messenger.live.com IN AAAA.
+2023-09-12T08:33:03.976508+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Removing cache entry for clients4.google.com IN CNAME (expired 7s ago)
+2023-09-12T08:33:03.976526+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Removing cache entry for clients.l.google.com IN AAAA (expired 7s ago)
+2023-09-12T08:33:03.976540+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Removing cache entry for mail.google.com IN A (expired 5s ago)
+2023-09-12T08:33:03.976553+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Removing cache entry for googleads.g.doubleclick.net IN A (expired 2s ago)
+2023-09-12T08:33:03.976575+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Cache miss for azwcus1-client-s.gateway.messenger.live.com IN AAAA
+2023-09-12T08:33:03.976586+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Firing regular transaction 46866 for <azwcus1-client-s.gateway.messenger.live.com IN AAAA> scope dns on wlp2s0/* (validate=yes).
+2023-09-12T08:33:03.976610+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Using feature level UDP for transaction 46866.
+2023-09-12T08:33:03.976620+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Using DNS server 192.168.1.1 for transaction 46866.
+2023-09-12T08:33:03.976709+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Emitting UDP, link MTU is 1500, socket MTU is 0, minimal MTU is 40
+2023-09-12T08:33:03.976718+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Sending query packet with id 46866 of size 61.
+2023-09-12T08:33:03.976791+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Cache miss for azwcus1-client-s.gateway.messenger.live.com IN A
+2023-09-12T08:33:03.976800+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Firing regular transaction 6337 for <azwcus1-client-s.gateway.messenger.live.com IN A> scope dns on wlp2s0/* (validate=yes).
+2023-09-12T08:33:03.976824+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Using feature level UDP for transaction 6337.
+2023-09-12T08:33:03.976832+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Using DNS server 192.168.1.1 for transaction 6337.
+2023-09-12T08:33:03.976889+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Emitting UDP, link MTU is 1500, socket MTU is 0, minimal MTU is 40
+2023-09-12T08:33:03.976912+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Sending query packet with id 6337 of size 61.
+2023-09-12T08:33:03.976957+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: Changing state processing-method → pending-method
+2023-09-12T08:33:03.980865+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received dns UDP packet of size 156, ifindex=3, ttl=0, fragsize=0, sender=192.168.1.1, destination=192.168.1.30
+2023-09-12T08:33:03.980877+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Processing incoming packet of size 156 on transaction 6337 (rcode=SUCCESS).
+2023-09-12T08:33:03.981011+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Added positive unauthenticated non-confidential cache entry for azwcus1-client-s.gateway.messenger.live.com IN CNAME 226s on wlp2s0/INET/192.168.1.1
+2023-09-12T08:33:03.981051+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Added positive unauthenticated non-confidential cache entry for azwcus1-client-s.msnmessenger.msn.com.akadns.net IN CNAME 226s on wlp2s0/INET/192.168.1.1
+2023-09-12T08:33:03.981083+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Added positive unauthenticated non-confidential cache entry for ip.azwcus1-client-s.msnmessenger.msn.com.akadns.net IN A 226s on wlp2s0/INET/192.168.1.1
+2023-09-12T08:33:03.981096+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Regular transaction 6337 for <azwcus1-client-s.gateway.messenger.live.com IN A> on scope dns on wlp2s0/* now complete with <success> from network (unsigned; non-confidential).
+2023-09-12T08:33:03.981144+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received dns UDP packet of size 216, ifindex=3, ttl=0, fragsize=0, sender=192.168.1.1, destination=192.168.1.30
+2023-09-12T08:33:03.981153+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Processing incoming packet of size 216 on transaction 46866 (rcode=SUCCESS).
+2023-09-12T08:33:03.981228+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Added positive unauthenticated non-confidential cache entry for azwcus1-client-s.gateway.messenger.live.com IN CNAME 15s on wlp2s0/INET/192.168.1.1
+2023-09-12T08:33:03.981261+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Added positive unauthenticated non-confidential cache entry for azwcus1-client-s.msnmessenger.msn.com.akadns.net IN CNAME 226s on wlp2s0/INET/192.168.1.1
+2023-09-12T08:33:03.981272+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Regular transaction 46866 for <azwcus1-client-s.gateway.messenger.live.com IN AAAA> on scope dns on wlp2s0/* now complete with <success> from network (unsigned; non-confidential).
+2023-09-12T08:33:03.981311+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Freeing transaction 6337.
+2023-09-12T08:33:03.981335+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Following CNAME/DNAME azwcus1-client-s.gateway.messenger.live.com → azwcus1-client-s.msnmessenger.msn.com.akadns.net.
+2023-09-12T08:33:03.981349+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Following CNAME/DNAME azwcus1-client-s.msnmessenger.msn.com.akadns.net → ip.azwcus1-client-s.msnmessenger.msn.com.akadns.net.
+2023-09-12T08:33:03.981534+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Cache miss for ip.azwcus1-client-s.msnmessenger.msn.com.akadns.net IN AAAA
+2023-09-12T08:33:03.981543+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Firing regular transaction 38574 for <ip.azwcus1-client-s.msnmessenger.msn.com.akadns.net IN AAAA> scope dns on wlp2s0/* (validate=yes).
+2023-09-12T08:33:03.981576+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Using feature level UDP for transaction 38574.
+2023-09-12T08:33:03.981584+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Using DNS server 192.168.1.1 for transaction 38574.
+2023-09-12T08:33:03.981647+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Emitting UDP, link MTU is 1500, socket MTU is 0, minimal MTU is 40
+2023-09-12T08:33:03.981655+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Sending query packet with id 38574 of size 69.
+2023-09-12T08:33:03.981713+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Positive cache hit for ip.azwcus1-client-s.msnmessenger.msn.com.akadns.net IN A
+2023-09-12T08:33:03.981726+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Regular transaction 10571 for <ip.azwcus1-client-s.msnmessenger.msn.com.akadns.net IN A> on scope dns on wlp2s0/* now complete with <success> from cache (unsigned; non-confidential).
+2023-09-12T08:33:03.981742+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Freeing transaction 46866.
+2023-09-12T08:33:03.985136+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received dns UDP packet of size 69, ifindex=3, ttl=0, fragsize=0, sender=192.168.1.1, destination=192.168.1.30
+2023-09-12T08:33:03.985147+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Processing incoming packet of size 69 on transaction 38574 (rcode=SUCCESS).
+2023-09-12T08:33:03.985170+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Not caching negative entry without a SOA record: ip.azwcus1-client-s.msnmessenger.msn.com.akadns.net IN AAAA
+2023-09-12T08:33:03.985180+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Regular transaction 38574 for <ip.azwcus1-client-s.msnmessenger.msn.com.akadns.net IN AAAA> on scope dns on wlp2s0/* now complete with <success> from network (unsigned; non-confidential).
+2023-09-12T08:33:03.985206+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Freeing transaction 10571.
+2023-09-12T08:33:03.985258+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: Sending message: {"parameters":{"addresses":[{"ifindex":3,"family":2,"address":[52,159,49,199]}],"name":"ip.azwcus1-client-s.msnmessenger.msn.com.akadns.net","flags":9437185}}
+2023-09-12T08:33:03.985268+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: Changing state pending-method → idle-server
+2023-09-12T08:33:03.985281+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Freeing transaction 38574.
+2023-09-12T08:33:03.985422+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: Got POLLHUP from socket.
+2023-09-12T08:33:03.985442+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: Changing state idle-server → pending-disconnect
+2023-09-12T08:33:03.985459+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: Changing state pending-disconnect → processing-disconnect
+2023-09-12T08:33:03.985468+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: Changing state processing-disconnect → disconnected
+2023-09-12T08:33:05.599475+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink: New incoming connection.
+2023-09-12T08:33:05.599581+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink: Connections of user 1000: 0 (of 576 max)
+2023-09-12T08:33:05.599598+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: Setting state idle-server
+2023-09-12T08:33:05.599688+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: New incoming message: {"method":"io.systemd.Resolve.ResolveHostname","parameters":{"name":"discovery-v6.syncthing.net","flags":0}}
+2023-09-12T08:33:05.599743+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: Changing state idle-server → processing-method
+2023-09-12T08:33:05.599950+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: idn2_lookup_u8: discovery-v6.syncthing.net → discovery-v6.syncthing.net
+2023-09-12T08:33:05.599971+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Looking up RR for discovery-v6.syncthing.net IN A.
+2023-09-12T08:33:05.599980+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Looking up RR for discovery-v6.syncthing.net IN AAAA.
+2023-09-12T08:33:05.600195+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Removing cache entry for api.languagetoolplus.com IN A (expired 1s ago)
+2023-09-12T08:33:05.600217+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Removing cache entry for app.slack.com IN A (expired 0s ago)
+2023-09-12T08:33:05.600244+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: NODATA cache hit for discovery-v6.syncthing.net IN A
+2023-09-12T08:33:05.600256+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Regular transaction 39107 for <discovery-v6.syncthing.net IN A> on scope dns on wlp2s0/* now complete with <success> from cache (unsigned; non-confidential).
+2023-09-12T08:33:05.600274+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Cache miss for discovery-v6.syncthing.net IN AAAA
+2023-09-12T08:33:05.600285+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Firing regular transaction 12363 for <discovery-v6.syncthing.net IN AAAA> scope dns on wlp2s0/* (validate=yes).
+2023-09-12T08:33:05.600304+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Using feature level UDP for transaction 12363.
+2023-09-12T08:33:05.600312+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Using DNS server 192.168.1.1 for transaction 12363.
+2023-09-12T08:33:05.600399+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Emitting UDP, link MTU is 1500, socket MTU is 0, minimal MTU is 40
+2023-09-12T08:33:05.600413+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Sending query packet with id 12363 of size 44.
+2023-09-12T08:33:05.600481+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: Changing state processing-method → pending-method
+2023-09-12T08:33:05.604391+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Received dns UDP packet of size 100, ifindex=3, ttl=0, fragsize=0, sender=192.168.1.1, destination=192.168.1.30
+2023-09-12T08:33:05.604404+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Processing incoming packet of size 100 on transaction 12363 (rcode=SUCCESS).
+2023-09-12T08:33:05.604486+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Added positive unauthenticated non-confidential cache entry for discovery-v6.syncthing.net IN AAAA 2297s on wlp2s0/INET/192.168.1.1
+2023-09-12T08:33:05.604527+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Added positive unauthenticated non-confidential cache entry for discovery-v6.syncthing.net IN AAAA 2297s on wlp2s0/INET/192.168.1.1
+2023-09-12T08:33:05.604538+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Regular transaction 12363 for <discovery-v6.syncthing.net IN AAAA> on scope dns on wlp2s0/* now complete with <success> from network (unsigned; non-confidential).
+2023-09-12T08:33:05.604571+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Freeing transaction 39107.
+2023-09-12T08:33:05.604631+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: Sending message: {"parameters":{"addresses":[{"ifindex":3,"family":10,"address":[42,3,176,192,0,0,16,16,0,0,0,0,0,187,64,1]},{"ifindex":3,"family":10,"address":[36,0,97,128,1,0,0,208,0,0,0,0,7,65,160,1]}],"name":"discovery-v6.syncthing.net","flags":9437185}}
+2023-09-12T08:33:05.604642+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: Changing state pending-method → idle-server
+2023-09-12T08:33:05.604656+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Freeing transaction 12363.
+2023-09-12T08:33:05.604791+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: Got POLLHUP from socket.
+2023-09-12T08:33:05.604812+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: Changing state idle-server → pending-disconnect
+2023-09-12T08:33:05.604829+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: Changing state pending-disconnect → processing-disconnect
+2023-09-12T08:33:05.604838+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: Changing state processing-disconnect → disconnected
+2023-09-12T08:33:05.605368+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink: New incoming connection.
+2023-09-12T08:33:05.605393+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink: Connections of user 1000: 0 (of 576 max)
+2023-09-12T08:33:05.605403+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: Setting state idle-server
+2023-09-12T08:33:05.605451+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: New incoming message: {"method":"io.systemd.Resolve.ResolveHostname","parameters":{"name":"discovery-v6.syncthing.net","flags":0}}
+2023-09-12T08:33:05.605481+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: Changing state idle-server → processing-method
+2023-09-12T08:33:05.605589+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: idn2_lookup_u8: discovery-v6.syncthing.net → discovery-v6.syncthing.net
+2023-09-12T08:33:05.605604+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Looking up RR for discovery-v6.syncthing.net IN A.
+2023-09-12T08:33:05.605611+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Looking up RR for discovery-v6.syncthing.net IN AAAA.
+2023-09-12T08:33:05.605798+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Positive cache hit for discovery-v6.syncthing.net IN AAAA
+2023-09-12T08:33:05.605817+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Regular transaction 26418 for <discovery-v6.syncthing.net IN AAAA> on scope dns on wlp2s0/* now complete with <success> from cache (unsigned; non-confidential).
+2023-09-12T08:33:05.605836+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: NODATA cache hit for discovery-v6.syncthing.net IN A
+2023-09-12T08:33:05.605846+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Regular transaction 32428 for <discovery-v6.syncthing.net IN A> on scope dns on wlp2s0/* now complete with <success> from cache (unsigned; non-confidential).
+2023-09-12T08:33:05.605864+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Freeing transaction 26418.
+2023-09-12T08:33:05.605877+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: Freeing transaction 32428.
+2023-09-12T08:33:05.605935+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: Sending message: {"parameters":{"addresses":[{"ifindex":3,"family":10,"address":[36,0,97,128,1,0,0,208,0,0,0,0,7,65,160,1]},{"ifindex":3,"family":10,"address":[42,3,176,192,0,0,16,16,0,0,0,0,0,187,64,1]}],"name":"discovery-v6.syncthing.net","flags":1048577}}
+2023-09-12T08:33:05.605945+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: Changing state processing-method → processed-method
+2023-09-12T08:33:05.605964+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: Changing state processed-method → idle-server
+2023-09-12T08:33:05.606082+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: Got POLLHUP from socket.
+2023-09-12T08:33:05.606103+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: Changing state idle-server → pending-disconnect
+2023-09-12T08:33:05.606120+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: Changing state pending-disconnect → processing-disconnect
+2023-09-12T08:33:05.606127+0200 iwana-202305.pc.kron.no systemd-resolved[35519]: varlink-17: Changing state processing-disconnect → disconnected
