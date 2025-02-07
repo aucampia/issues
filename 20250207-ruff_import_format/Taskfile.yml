@@ -8,5 +8,5 @@ vars:
 tasks:
   default:
     cmds:
-      - poetry run ruff 
+      - poetry run ruff check --diff
     silent: true
