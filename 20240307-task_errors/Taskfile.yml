@@ -1,0 +1,32 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  GREETING: Hello, World!
+
+tasks:
+
+  example:something:a:
+    desc: "Do something [a]"
+    cmds:
+      - echo "Doing something [a]"
+      - sleep 5
+  example:something:b:
+    desc: "Do something [b]"
+    cmds:
+      - echo "Doing something [b]"
+      - sleep 5
+  example:something:c:
+    desc: "Do something [c]"
+    cmds:
+      - echo "Doing something [c]"
+      - sleep 2.5
+      - 'false'
+  example:parallel:
+    desc: "Run multiple tasks in parallel"
+    deps:
+      - example:something:a
+      - example:something:b
+      - example:something:c
+    cmds: []
