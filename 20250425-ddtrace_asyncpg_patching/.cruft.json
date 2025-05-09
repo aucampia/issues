@@ -1,0 +1,27 @@
+{
+  "template": "/home/tb0/sw/d/github.com/aucampia/cookiecutter-python",
+  "commit": "33e7617963116e32930e4118ec8236fa6758e60c",
+  "checkout": null,
+  "context": {
+    "cookiecutter": {
+      "project_name": "aucampia.issues.ddtrace_asyncpg_patching",
+      "python_package_fqname": "aucampia.issues.ddtrace_asyncpg_patching",
+      "project_url": "https://example.com/project",
+      "project_dirname": "20250425-ddtrace_asyncpg_patching",
+      "project_short_description": "aucampia.issues.ddtrace_asyncpg_patching",
+      "cli_name": "aucampia.issues.ddtrace_asyncpg_patching-cli",
+      "sdpx_license_identifier": "UNLICENSED",
+      "version": "0.0.0",
+      "python_version": "3.13",
+      "git_init": "n",
+      "git_commit": "n",
+      "variant": "minimal",
+      "build_tool": "go-task",
+      "use_poetry_dynamic_versioning": "n",
+      "use_oci_devtools": "n",
+      "_template": "/home/tb0/sw/d/github.com/aucampia/cookiecutter-python",
+      "_commit": "33e7617963116e32930e4118ec8236fa6758e60c"
+    }
+  },
+  "directory": null
+}

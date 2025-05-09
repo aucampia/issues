@@ -1,0 +1,17 @@
+default_context:
+  _commit: 33e7617963116e32930e4118ec8236fa6758e60c
+  build_tool: go-task
+  cli_name: aucampia.issues.ddtrace_asyncpg_patching-cli
+  git_commit: n
+  git_init: n
+  project_dirname: 20250425-ddtrace_asyncpg_patching
+  project_name: aucampia.issues.ddtrace_asyncpg_patching
+  project_short_description: aucampia.issues.ddtrace_asyncpg_patching
+  project_url: https://example.com/project
+  python_package_fqname: aucampia.issues.ddtrace_asyncpg_patching
+  python_version: '3.13'
+  sdpx_license_identifier: UNLICENSED
+  use_oci_devtools: n
+  use_poetry_dynamic_versioning: n
+  variant: minimal
+  version: 0.0.0
