@@ -34,13 +34,13 @@ pipx run --spec=cruft cruft update
 export PGPORT=39432 PGUSER=postgres PGPASSWORD=postgres
 
 # Okay
-DDTRACE_ENABLE= POOL_CONNECT_DEFAULT= poetry run python src/aucampia/issues/ddtrace_asyncpg_patching/patched.py
+DDTRACE_ENABLE= POOL_CONNECT_DEFAULT= uv run reproduce.py
 
 # Fails
-DDTRACE_ENABLE=true POOL_CONNECT_DEFAULT= poetry run python src/aucampia/issues/ddtrace_asyncpg_patching/patched.py
+DDTRACE_ENABLE=true POOL_CONNECT_DEFAULT= uv run reproduce.py
 
 # Also Okay
-DDTRACE_ENABLE=true POOL_CONNECT_DEFAULT=true poetry run python src/aucampia/issues/ddtrace_asyncpg_patching/patched.py
+DDTRACE_ENABLE=true POOL_CONNECT_DEFAULT=true uv run reproduce.py
 ```
 
 ```console
